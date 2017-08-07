@@ -1,0 +1,50 @@
+;; Chapter 03: The Parts of the Language
+;; -------------------------------------
+;;
+;; Data Types
+;; ----------
+;; Common Lisp supports literally an infinite number of data types. While there is
+;; a finite number of predefined types, you can define as many other types as you
+;; need.
+;; You can check the type of an argument using the "type-of" function.
+;;
+;; (type-of 7)                => FIXNUM
+;; (type-of 7.2)              => FLOAT
+;; (type-of "abc")            => (SIMPLE-STRING 3)
+;; (type-of '(a b b))         => CONS
+;; (type-of '#(a b))          => (SIMPLE-VECTOR 2)
+;; (type-of #\a)              => STANDARD-CHAR
+;;
+;; "type-of" returns the most specific type it can.
+;; If yuo know the type, or want to determine if an object is a particular type,
+;; you can use the "typep" function.
+;;
+;; (typep 7 'number)           => T
+;; (typep '(a b c) 'list)      => T
+;; (typep 7/2 'rational)       => T
+;; (typep 7/3 'string)         => NIL
+;;
+;; The "typep" function returns T for an object not only if it is the specified type,
+;; but also if the object is a subtype of the one specified.
+;;
+;; The "subtypep" function determines if one type is a subtype of another type.
+;;
+;; (subtypep 'integer 'number)   => T
+;;                                  T
+;; (subtypep 'vector 'array)     => T
+;;                                  T
+;; (subtypep 'list 'number)      => NIL
+;;                                  T
+;;
+;; Two values are returned. The second value indicates whether or not "subtypep" could
+;; determine a relationship between the two types. If the value is T, then the first
+;; value indicates whether or not the first type is a subtype of the second type. To
+;; determine if one object is a subtype of a type, you can use "type-of" and "subtypep"
+;; together.
+;;
+;; (subtypep (type-of 7) 'number)        => T
+;;                                          T
+;; (subtypep (type-of '(a b c)) 'list)   => T
+;;                                          T
+
+

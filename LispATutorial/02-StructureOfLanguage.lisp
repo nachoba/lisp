@@ -79,3 +79,30 @@
 
 ; Complex functions are built on other functions that use other functions, that use other
 ; functions, etc.
+
+; Summary
+; -------
+; Q: What makes up a form?
+; A: A form is a single complete unit in a program. It begins and ends with parentheses.
+;    Within parentheses are the function name and arguments. Arguments may themselves be
+;    the result of other forms.
+;     
+; Q: How are functions defined?
+; A: The defun macro defines new functions. Functions themselves are made up of other
+;    functions.
+;
+; Q: What is a keyword?
+; A: The term keyword is reserved for special words within a lambda expression. The names
+;    of functions are symbols. The value of the symbols can be changed.
+;
+; Q: What are the primitives of Lisp?
+; A: The three basic primitives are: car, cdr, and cons. These functions put together and
+;    take apart lists.
+;
+; Q: How does Lisp read-eval-print a form?
+; A: The listener reads a form and sends it to the interpreter. The interpreter evaluates the
+;    form and sends the result to the printer for output. The result may be displayed on the
+;    screen or sent to another function for use as an argument.
+
+
+     
