@@ -7,7 +7,8 @@ The Guess-My-Number Game
 In this game, you pick a number from 1 to 100, and the computer has to guess it.
 To create the game, we need to write three functions:  * guess-my-number
                                                        * smaller
-                                                       * bigger                                             The player simply calls these functions from the REPL. 
+                                                       * bigger                                            
+The player simply calls these functions from the REPL. 
 Let's think about the strategy behind this simple game:
 1. Determine the upper and lower (big and small) limit of the player's number.
    Since the range is between 1 and 100, the smallest possible number would be
@@ -123,3 +124,39 @@ Note: Because the names of the variables and their values in a let expression
 
 Defining Local Functions in Lisp
 --------------------------------
+We define local functions using the "flet" command. The "flet" command has
+the following structure:
+
+(flet ((function_name (arguments)
+        ...function body...))
+  ...body...)
+
+For example:
+
+(flet ((f (n)
+          (+ n 10)))
+  (f 5))
+
+A single flet command can be used to declare multiple local functions at once.
+(flet ( (f (n) (+ n 10))
+        (g (n) (- n 3)))
+  (g (f 5)))
+
+To make function names available in defined functions, we can use the "labels"
+command. 
+(labels ( (a (n) (+ n 5))
+          (b (n) (+ (a n) 6)))
+  (b 10))
+
+The labels command lets you call one local function from another, and it allows
+you to have a function call itself. This is commonly done in Lisp code and is
+called recursion.
+
+Check-List
+----------
+* To define a global variable, we use "defparameter"
+* To define a global function, we use "defun"
+* Use of "let" and "flet" to define local variables and functions.
+* Use of "label" to let functions call themselves. 
+
+|#
