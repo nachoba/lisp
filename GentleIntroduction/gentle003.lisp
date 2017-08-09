@@ -97,3 +97,108 @@
 ;; -------------------------
 ;; It is easy for beginning Lisp programmer to get confused about quoting and
 ;; either put quotes in the wrong place or leave them out where they are needed.
+;; The error messages Lisp gives are good hint about what went wrong.
+;; An unassigned variable or undefined function error usuaylly indicates that a
+;; quote was left out:
+;; (list 'a 'b c)    =>  *** - SYSTEM::READ-EVAL-PRINT: variable C has no value
+;;
+;; On the other hand, wrong-type input errors or funny results may be an indication
+;; that a quote was put in where it doesn't belong.
+;; (+ 10 '(- 5 2))   =>  *** - +: (- 5 2) is not a number
+;;
+;; When we quote a list, the quote must go outside the list to prevent the list from
+;; being evaluated. If we put the quote inside the list, eval will try to evaluate
+;; the list and an error will result:
+;; ('foo 'bar 'baz)  =>  *** - EVAL: 'FOO is not a function name; try using a symbol instead
+
+;; Three Ways to Make Lists
+;; ------------------------
+;; We have three ways to make lists using eval notation:
+;; * We can write the list out directly using a quote to prevent its evaluation:
+;;   '(foo bar baz)
+;;
+;; * We can use LIST or CONS to build the list up from individual elements. If we use this
+;;   method we must quote each argument to the function:
+;;   (list 'foo 'bar 'baz)
+;;   (cons 'foo '(bar baz))
+
+;;   One advantage of building the list up from individual elements is that some of the
+;;   elements can be computed rather than specified directly.
+;;   (list 33 'squared 'is (* 33 33))
+
+;; Exercises
+;; ---------
+;; 1. The following expression evaluate without errors. Write down the result:
+;;    (cons 5 (list 6 7)) => (cons 5 (6 7)) => (5 6 7)
+;;    (cons 5 '(list 6 7)) => (5 list 6 7)
+;;    (list 3 'from 9 'gives (- 9 3)) => (3 from 9 gives 6)
+;;    (+ (length '(1 foo 2 moo))
+;;       (third '(1 foo 2 moo)))  => (+ 4 2) => 6
+;;    (rest '(cons is short for construct)) => (is short for construct)
+;;
+;; 2. The following expression contain errors. Correct them.
+;;    (third (the quick brown fox)) => (third '(the quick brown fox)) => (brown)
+;;    (list 2 and 2 is 4)           => (list 2 'and 2 'is 4) => (2 and 2 is 4)
+;;    (+ 1 '(length (list t t t t))) => (+ 1 (length (list t t t t) => 5
+;;    (cons 'patrick (seymour marvin)) => (cons 'patrick '(seymour marvin))
+;;    (cons 'patrick (list seymour marvin)) => (cons 'patrick (list 'seymour 'marvin)
+;;
+;; 3. Define a predicate "longer-than" that takes two lists as input and returns T if the
+;;    first list is longer than the second:
+(defun longer-than(a b)
+  (> (length a) (length b)))
+
+;; 4. Write a function "addlength" that takes a list as input and returns a new list
+;;    with the length of the input added onto the fron of it.
+(defun addlength (a)
+  (cons (length a) a))
+
+;; Four Ways to Misdefine a Function
+;; ---------------------------------
+;; Beginning users of eval notation sometimes have trouble writing syntactically correct
+;; function definitions. Let's take a close look at a proper definition for the function
+;; "intro":
+(defun intro(x y)
+  (list x 'this 'is y))
+
+;; The first way to misdefine a function is to put something other than plain unadorned
+;; symbols in the function's argument list. If we put quotes or extra levels of parentheses
+;; in the argument list, the function won't work.
+;; (defun intro ('x 'y) (list x 'this 'is y))  => Bad Argument List
+;; (dufun intro ((x) (y) (list x 'this 'is y)) => Bad Argument List
+
+;; The second way to misdefine a function is to put parentheses around the variables where they
+;; appear in the body. Only function calls should have parentheses around them.
+;; (defun intro(x y) (list (x) 'this 'is (y)))  => X undefined function
+
+;; The third way to misdefine a function is to quote a variable. Symbols must be left unquoted
+;; when they refer to variables.
+;; (defun intro(x y) (list 'x 'this 'is 'y)) => (x this is y)
+
+;; The fourth way is to not quote something that should be quoted.
+;; (defun intro(x y) (list x this is y) => Error THIS unassigned variable
+
+
+;; More About Variables
+;; --------------------
+
+
+;; Summary
+;; -------
+;; Lists are interpreted by the eval function according to a buit-in set of evaluation rules:
+;; * Numbers are self-evaluating, meaning they evaluate to themselves. So do T and NIL.
+;; * When evaluating a list, the first element specifies a function to call, and the remaining
+;;   elements specify its arguments. The arguments are evaluated from left to right to derive the
+;;   inputs that are passed to the function.
+;; * Symbols appearing anywhere other than the first element of a list are interpreted as variable
+;;   references. A symbol evaluates to the value of the variable it names.
+;; * A quoted list or symbol evaluates to itself, whitout the quote.
+;;
+;; A list of form (defun function-name (argument-list) function-body) defines a function. Defun is a
+;; special kind of function; its inputs do not have to be quoted. A function's argument list is a list
+;; of symbols giving names to the function's inputs. Inside the body of the function, the variables
+;; that hold the function's inputs can be referred to by these symbols.
+
+
+
+
