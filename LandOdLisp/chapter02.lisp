@@ -92,3 +92,34 @@ and then call "guess-my-number" again to return a new starting guess.
   (defparameter *big* 100)
   (guess-my-number))
 
+
+#| 
+Defining Local Variables in Lisp
+--------------------------------
+For our simple game, we've defined global variables an functions. However,
+in most cases you'll want to limit your definitions to a single function
+or a block of code. These are called "local variables" and functions.
+To define a local variable, use the command "let", which has the following
+structure:
+
+(let (variable declarations)
+   ... body ...)
+
+For example:
+
+(let ( (a 5) (b 6)) (+ a b))    => 11
+
+When using a let expression, you must surround the entire list of declared
+variables with parentheses. Also, you must surround each pair of variable
+names and initial variables with another set of parentheses.
+
+Note: Because the names of the variables and their values in a let expression
+      form a kind of simple table, is a common practice to align the declared
+      variables vertically.
+
+(let ((a 5)
+      (b 6))
+  (+ a b))
+
+Defining Local Functions in Lisp
+--------------------------------
