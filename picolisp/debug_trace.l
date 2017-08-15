@@ -37,8 +37,22 @@
 # function exit with an equal '=' sign from the return value.
 
 # 'trace' works by modifying the function body. To reset a   
-# function to its untraced state, call 'untrace'.
+# function to its untraced state, call 'untrace'.            
 
 # (untrace 'fact)
+
+
+# Single-Stepping                                            
+# ---------------                                            
+# This method means to execute a function step by step, gi-  
+# ving the programmer an opportunity to look more closely at 
+# what is happening. The function 'debug' inserts a break-   
+# point into each top-level expression of a function. When   
+# the function is called, it stops at each breakpoint, dis-  
+# plays the expression it is about to execute next -this ex- 
+# pression is also stored into the global variable ^ - and   
+# enters a read-eval-loop. The programmer can then:          
+
+
 
 
