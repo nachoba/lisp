@@ -77,5 +77,136 @@ YUP
       'nope)
 
 NOPE
-s
+
+So far, the only way to branch on a condition that we've looked at has been the if
+command.
+
+> (if (oddp 5)
+      'odd-number
+      'even-number)
+
+ODD-NUMBER
+
+All we do here is checking whether the number 5 is odd, then, depending on the result,
+evaluating one of the two following expressionsin the if form. There are two important
+observations to be made:
+ * Only one of the expressions after the if is actually evaluated.
+ * We can only do one thing in an if statement.
+
+And to illustrate this this expression will evaluate:
+
+> (if (oddp 5)
+      'odd-number
+      (/ 1 0))
+
+ODD-NUMBER
+
+Since only one expression inside an if es ever evaluated, it's impossible to do two or
+more separate things inside your branch. However, for cases when you really want to do
+more than one thing, you can use a special command "progn", to wedge in extra commands
+in a single expression. With "progn" only the last evaluation is returned as the value
+of the full expression.
+|#
+
+(defvar *number-was-odd* nil)
+
+(if (oddp 5)
+    (progn (setf *number-was-odd* t)
+	   'odd-number)
+  'even-number)
+;; Evaluates to "T"
+
+#|
+Going Beyond if: The when and unless Alternatives
+-------------------------------------------------
+Since it's kind of pain to use "progn" every time you want to do multiple things inside
+and if, Lisp has several other commands that include an implicit "progn". The most ba-
+sic of these are "when" and "unless":
+
+With "when", all the enclosed expressions are evaluated when the condition is true.
+With "unless", all the enclosed expressions are evaluated when the condition is false.
+|#
+(defvar *number-is-odd* nil)
+
+(when (oddp 5)
+  (setf *number-is-odd* t)
+  'odd-number)
+
+;; Evaluates to "ODD-NUMBER"
+
+(unless (oddp 4)
+  (setf *number-is-odd* nil)
+  'even-number)
+
+;; Evaluates to "EVEN-NUMBER"
+
+
+#|
+The trade-off is that these commands can't do anything when the condition evaluates in
+the opposite way; they just return "nil" and do nothing.
+
+The Command that Does it All: "cond"
+------------------------------------
+The "cond" form is the classic way to do branching in Lisp. Through the liberal use of
+parentheses, it allows for an implicit "progn", can handle more than one branch, and
+can even evaluate several conditions in succession.
+|#
+
+(defvar *arch-enemy* nil)
+
+(defun pudding-eater (person)
+  (cond ((eq person 'henry)  (setf *arch-enemy* 'stupid-lisp-alien)
+	 '(curse you lisp alien - you ate my pudding))
+	((eq person 'johnny) (setf *arch-enemy* 'useless-old-johnny)
+	 '(i hope you choked on my pudding johnny))
+	(t
+	 '(why you eat my pudding stranger?))))
+
+
+#|
+The conditions in a "cond" form are always checked from the top down, so the first
+successful match drives the behavior. In this example, the last branch has a con-
+dition of "t", guaranteeing that at least the last branch will always be evaluated.
+This -catch all conditional- is a common "cond" idiom.
+
+Branching with case
+-------------------
+Let's look at one final Lisp command: the "case" form. It is common to use the "eq"
+for conditionals, and "case" lets you supply a value to compare against. Using "case",
+we can rewrite the previous examples as follows, which is much easier to follow.
+|#
+
+(defun pudding-eater-two (person)
+  (case person
+	((henry)    (setf *arch-enemy* 'stupid-lisp-alien)
+	 '(curse you lisp alien - you ate my pudding))
+
+	((johnny)   (setf *arch-enemy* 'useless-old-johnny)
+	 '(i hioe you choked on my pudding johnny))
+
+	(otherwise  '(why you eat my pudding stranger?))))
+
+#|
+Cool Tricks with Conditions
+---------------------------
+A couple of counterintuitive tricks involving conditions in Lisp can help you write
+cleaner code.
+
+Using the Stealth Conditionals "and" and "or"
+---------------------------------------------
+The conditionals "and" and "or" are simple mathematical operators, which allow you to
+manipulate Boolean values in the same way you might manipulate numbers using addition
+and subtraction.
+
+To see if three numbers are odd:
+
+> (and (oddp 5) (oddp 7) (oddp 9))
+
+T
+
+Similarly, we can use "or" to see whether at least one of a set of numbers is odd:
+
+> (or (oddp 4) (oddp 7) (oddp 8))
+
+T
 
