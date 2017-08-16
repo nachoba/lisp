@@ -209,16 +209,4 @@ Similarly, we can use "or" to see whether at least one of a set of numbers is od
 > (or (oddp 4) (oddp 7) (oddp 8))
 
 T
-But there's something more interesting about "and" and "or". These two commands look like
-completely ordinary mathematical operators; they do not look like conditional commands, such
-as "if" or "cond". However, they can be used for conditional behavior.
 |#
-
-;; Using "or" to set a global variable to true only when a number is even
-
-(defparameter *is-it-even* nil)
-
-(or (oddp 4) (setf *is-it-even* t))
-
-
-
