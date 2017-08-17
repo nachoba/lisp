@@ -168,13 +168,233 @@ itself.
 
 List Operations
 ---------------
+The function "cons" builds lists. If its second argument is a list, it re-
+turns a new list with the first argument added to the front:
 
+> (cons 'a '(b c d))
+(A B C D)
 
+We can build up lists by consing new elements onto an empty list with  the
+"list" function that we saw in the previous section is just a more  conve-
+nient way of consing several things onto "nil":
 
+> (cons 'a (cons 'b nil))
+(A B)
 
+> (list 'a 'b)
+(A B)
 
+The primitive functions for extracting the elements of lists are "car" and
+"cdr". The "car" of a list is  the first  element, and the "cdr" is every-
+thing after the first element.
 
+> (car '(a b c))
+A
 
+> (cdr '(a b c))
+(B C)
 
+You can use combinations of "car" and "cdr" to reach any element of a list
+If you want to get the third element, you could say:
+
+> (car (cdr (cdr '(a b c d))))
+C
+
+However, you can do the same thing more easily by calling "third":
+
+> (third '(a b c d))
+C
+
+Truth
+-----
+In Common Lisp, the symbol "t" is the default representation for
+truth. Like "nil", "t" evaluates to itself. The function "listp" returns
+true if its argument is a list:
+
+> (listp '(a b c))
+T
+
+A function whose return value is intended to be interpreted as truth  or
+falsity is called a "predicate". Common Lisp predicates often have names
+that end with "p". 
+Falsity in Common Lisp is represented by "nil", the  empty list.   If we
+give "listp" an argument that isn't a list, it returns "nil":
+
+> (listp 27)
+NIL
+
+Because "nil" plays two roles in Common Lisp, the function "null", which
+returns true of the empty list, and  the function "not",   which returns
+true if its argument is false, do exactly the same thing.
+
+> (null nil)
+T
+
+> (not nil)
+T
+
+The simplest conditional in Common Lisp is "if". It usually takes three
+arguments: a test expression, a then expression, and an else expression.
+The test expression is evaluated: if it returns true, the then expres-
+sion is evaluated and its value is returned. If the test expression
+returns false, the else expression is evaluated and its value is retur-
+ned.
+
+> (if (listp '(a b c))
+      (+ 1 2)
+      (+ 5 6))
+3
+
+> (if (listp 27)
+      (+ 1 2)
+      (+ 5 6))
+11
+
+Like quote, "if" is a special operator. It could not possibly be imple-
+mented as a function, because the arguments in a function call are
+always evaluated, and the whole point of "if" is that only one of the 
+last two arguments is evaluated. The last argument to "if" is optional.
+If you omit it, it defaults to "nil":
+
+> (if (listp 27)
+      (+ 2 3))
+NIL
+
+Although "t" is the default representation for truth, everything except
+"nil" also counts as "true" in a logical context:
+
+> (if 27 1 2)
+1
+
+Simply, "if" acts like this:
+> (if <condition> <true> <false>)
+
+The logical operators "and" and "or" resemble conditionals. Both take
+any number of arguments, but only evaluate as many as they need in
+order to decide what to return. If all its arguments are true (that is,
+not nil), then and returns the value of the last one:
+
+> (and t (+ 1 2))
+3
+
+But if one of the arguments turns out to be false, none of the argu-
+ments after that get evaluated. Similarly for "or", which stops as
+soon as it finds an argument that is true.
+
+These two operators are "macros". Like special operators, macros can
+circumvent the usual evaluation rule.
+
+Functions
+---------
+You can define new functions with "defun". It usually takes three or
+more arguments: a name, a list of parameters, and one or more expres-
+sions that will make up the body of the function. Here is how we might
+define "third":
 |#
+
+(defun my-third (x)
+  (car (cdr (cdr x))))
+
+#|
+The first argument says that the name of this function will be:
+"my-third". The second argument, the list (x), says that the function
+will take exactly one argument: x. A symbol used as a placeholder in 
+this way is called a "variable". When the variable represents an argu-
+ment to a function, as x does, it is also called a parameter.
+The rest of the definition, (car (cdr (cdr x))), is known as the body
+of the function. It tells Lisp what it has to do to calculate the re-
+turn value of the function. So a call to "my-third" returns the eva-
+luation of the expression "(car (cdr (cdr x)))", for whatever x we
+give as the argument:
+
+> (my-third '(a b c d))
+C
+
+Now that we've seen variables, it's easier to understand what symbols
+are. They are variable names, existing as objects in their own right.
+And that's why symbols, like lists, have to be quoted. A list has to
+be quoted because otherwise it will be treated as code; a symbol has
+to be quoted because otherwise it will be treated as a variable.
+You can think of a function definition as a generalized version of a
+Lisp expression. The following expression tests whether the sum of 1
+and 4 is greater than 3:
+
+> (> (+ 1 4) 3)
+T
+
+By replacing these particular numbers with variables, we can write a
+function that will test whether the sum of any two numbers is greater
+than a third:
+|#
+
+(defun sum-greater (x y z)
+  (> (+ x y) z))
+
+#|
+
+> (sum-greater 1 4 3)
+T
+
+Lisp makes no distinction between a program, a procedure, and a func-
+tion. Functions do for everything (and indeed, make up most of the 
+language itself). If you want to consider one of your functions as 
+the main function, you can, but you will ordinarily be able to call
+any function from the toplevel. Among other things, this means that
+you will be able to test your programs piece by piece as you write
+them.
+
+
+Recursion
+---------
+The functions we defined in the previous section called other functions
+to do some of their work for them. A function can call any function,
+including itself. A function that calls itself is recursive.
+The Common Lisp function "member" test whether something is an element
+of a list. Here is a simplified version defined as a recursive function:
+|#
+
+(defun my-member (obj lst)
+  (if (null lst)
+      nil
+      (if (eql (car lst) obj)
+          lst
+          (my-member obj (cdr lst)))))
+
+#|
+The predicate "eql" test whether its two arguments are identical; aside
+from that, everything in this definition is something we have seen be-
+fore. Here it is in action:
+
+> (my-member 'b '(a b c))
+(B C)
+
+> (my-member 'z '(a b c ))
+NIL
+
+The definition of "my-member" corresponds to the following English
+description. To test whether an object "obj" is a member of a list
+"lst", we:
+  1. First check whether "lst" is empty. If it is, then "obj" is
+     clearly not a member of it, and we're done.
+  2. Otherwise, it "obj" is the first element of "lst", it is a 
+     member.
+  3. Otherwise "obj" is only a member of "lst" if it is a member of
+     the rest of "lst"
+
+When you want to understand how a recursive function works, it can
+help to translate it into a description of this kind.
+
+Input and Output
+----------------
+For the real interactive programs this is not likely to be enough.
+In this section we look at a few functions for input and output.
+The most general output function in Common Lisp is "format". It
+takes two or more arguments: the first indicates where the outputs
+is to be printed, the second is a string template, and the remaining
+arguments are usually objects whose printed representations are to
+be inserted into the template. Here is a typical example:
+|#
+
+(format t "~a plus ~a equals ~a.~%" 2 3 (+ 2 3))
+
 
