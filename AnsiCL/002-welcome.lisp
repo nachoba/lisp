@@ -8,7 +8,7 @@ Any Lisp system will include an interactive front-end called the toplevel.
 You type Lisp  expression into the toplevel, and the system displays their
 values.
 
-Number in Lisp evaluate to themselves, so, for example:
+Numbers in Lisp evaluate to themselves, so, for example:
 
 > 1
 1
@@ -153,7 +153,7 @@ the list is treated as code, and evaluation returns its value:
 Here the first argument is quoted, and so yields a list.  The second argu-
 ment is not quoted, and is treated as a function call, yielding  a number.
 In Common Lisp, there are two ways of representing the empty list. You can
-represente it as a pair of parentheses  with nothing between them,  or you
+represent it as a pair of parentheses  with nothing between them,  or you
 can use the symbol "nil". It does not matter which way you write the empty
 list, but it will be displayed as "nil":
 

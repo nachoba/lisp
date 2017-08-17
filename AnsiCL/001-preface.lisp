@@ -63,7 +63,7 @@ specific, and bottom-up programming inherently creates such a separation.
 Instead of devoting all  your effort to writing a single,  monolithic ap-
 plication, you devote part of your effort to building a language,and part
 to writing a smaller application on top of it.   What is specific to this
-specific to this application will be  concentrated in  the topmost layer.
+application will be  concentrated in  the topmost layer.
 The layers beneath  will form a language  for writing  applications  like
 this one -and what could be more reusable than a programming language?
 The phrase "rapid prototyping" describes a kind of programming that began
