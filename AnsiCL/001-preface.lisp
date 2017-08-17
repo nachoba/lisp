@@ -71,6 +71,11 @@ with Lisp:  in Lisp, you can often write a prototype in less time than it
 would take to write the spec for one.
 
 One of the aims of this book is to explain not just the Lisp language,but
-the new approach to programming that Lisp makes possible. 
+the new approach to programming that Lisp makes possible.This approach is
+one that you will see more of in the future, as programming  environments
+grow in power, and laguages become more abstract, the Lisp  style of pro-
+gramming is gradually replacing the old plan-and-implement model.
+|#
+
 
 
