@@ -118,4 +118,63 @@ ARTICHOKE
 Symbols do not (usually) evaluate to themselves,so if you want to refer to
 a symbol, you should quote it, as above.
 
+Lists are represented as zero or more elements enclosed in parentheses.The
+elements can be of any type, including lists. You have to quote lists,  or
+Lisp would take them for function calls:
+
+> '(my 3 "Sons")
+(MY 3 "Sons")
+
+> '(the list (a b c) has 3 elements)
+(THE LIST (A B C) HAS 3 ELEMENTS)
+
+Notice  that one quote protects a whole expression, including  expressions
+within it. You can build lists by calling "list". Since "list" is a  func-
+tion, its arguments are evaluated. Here we see a call to "+" within a call
+to "list":
+
+> (list 'my (+ 2 1) "Sons")
+(MY 3 "Sons")
+
+We are now in a position to appreciate one of the most remarkable features
+of Lisp. Lisp programs are expressed as lists.If the arguments of flexibi-
+lity and elegance did  not convince  you that Lisp notation  is a valuable
+tool, this point should.It means that Lisp program can generate Lisp code.
+Lisp programmers can write programs to write their programs for them.
+
+It is important to understand the relation between expressions and  lists,
+if only to avoid being confused by it. This is why we need the quote. If a
+list is quoted, evaluation returns  the list itself;  if it is not quoted,
+the list is treated as code, and evaluation returns its value:
+
+> (list '(+ 2 1) (+ 2 1))
+((+ 2 1) 3)
+
+Here the first argument is quoted, and so yields a list.  The second argu-
+ment is not quoted, and is treated as a function call, yielding  a number.
+In Common Lisp, there are two ways of representing the empty list. You can
+represente it as a pair of parentheses  with nothing between them,  or you
+can use the symbol "nil". It does not matter which way you write the empty
+list, but it will be displayed as "nil":
+
+> ()
+NIL
+
+> nil
+NIL
+
+You do not have to quote "nil" (though you could) because nil evaluates to
+itself.
+
+List Operations
+---------------
+
+
+
+
+
+
+
+
+|#
 
