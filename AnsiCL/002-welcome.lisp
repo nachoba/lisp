@@ -464,9 +464,124 @@ bothered to evaluate them all.
 
 Variables
 ---------
+One of the most frenquently used operators in Common Lisp is "let", which
+allows you to introduce new local variables:
 
+> (let ((x 1) (y 2))
+     (+ x y))
+
+3
+
+A "let" expression has two parts: First comes a list of instructions for
+creating variables, each of the form (variable expression). Each variable
+will initally be set to the value of the corresponding expression. So in
+the example above, we create two new variables, x and y, which are
+initially set to 1 and 2, respectively. These variables are valid within
+the body of the let.
+After the list of variables and values comes a body of expressions, which
+are evaluated in order. In this case there is only one, a call to +. The
+value of the last expression is returned as the value of the let. Here is
+an example of a more selective version of "askem" written using let:
+|#
+
+(defun ask-number ()
+  (format t "Please enter a number: ")
+  (let ((val (read)))
+    (if (numberp val)
+	val
+	(ask-number))))
+
+#|
+This function creates a variable "val" to hold the object returned by
+"read". Because it has a handle on this object, the function can look at
+what you entered before deciding whether or not to return it. As you
+probably guessed, "numberp" is a predicate that test whether its
+argument is a number. If the value entered by the user isn't a number,
+"ask-number" calls itself. The result is a function that insists on getting
+a number.
+
+Variables like those we have seen so far are called local variables. They
+are only valid within a certain context. There is another kind of variable,
+called a global variable, that can be visible everywhere. You can create a
+global variable by giving a symbol and a value to "defparameter":
+|#
+
+(defparameter *glob* 99)
+
+#|
+Such a variable will then be accessible everywhere, except in expressions
+that create a new local variable with the same name. To avoid the
+possibility of this happening by accident, it's conventional to give
+global variables names that begin with asterisks. The name of the variable
+we just created would be pronounced "star-glob-star".
+
+You can also define global constants, by calling "defconstant":
+|#
+
+(defconstant limit (+ *glob* 1))
+
+#|
+There is no need to give constants a distinctive name, because it will
+cause an error if anyone uses the same name for a variable. If you want to
+check whether some symbol is the name of a global variable or constant,
+use "boundp":
+
+> (boundp '*glob*)
+T
+
+Assignment
+----------
+In Common Lisp the most general assignment operator is "setf". We can use
+it to do assignments to either kind of variable:
+|#
+
+(setf *glob* 23)
+
+(let ((n 10))
+  (setf n 2)
+  n)
+
+#|
+When the first argument to "setf" is a symbol that is not the name of a
+local variable, it is taken to be a global variable:
+|#
+
+(setf x (list 'a 'b 'c))
+
+#|
+Will evaluate to: (A B C)
+That is, you can create global variables implicitly, just by assigning
+them values. In source files, at least, it is better style to use explicit
+"defparameter".
+You can do more than just assign values to variables. The first argument
+to "setf" can be an expression as well as a variable name. In such cases,
+the value of the second argument is inserted in the place referred to by
+the first:
+
+> (setf (car x) 'n)
+N
+> x
+(N B C)
+
+The first argument to "setf" can be almost any expression that refers to a
+particular place. You can give any (even) number of arguments to "setf".
+An expression of the form:
+> (setf a b
+        c d
+        e f)
+
+is equivalent to three separate calls to "setf" in sequence:
+
+> (setf a b)
+> (setf c d)
+> (setf e f)
+
+
+Functional Programming
+----------------------
 
 
 |#
+
 
 
