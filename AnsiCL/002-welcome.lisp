@@ -397,4 +397,76 @@ be inserted into the template. Here is a typical example:
 
 (format t "~a plus ~a equals ~a.~%" 2 3 (+ 2 3))
 
+#|
+2 plus 3 equal 5
+T
+
+Notice two things get displayed here. The first line is displayed by
+"format". The second line is the value returned by the call to "format",
+displayed in the usual way by the toplevel. Ordinarily a function like
+"format" is not called directly from the toplevel, but used within
+programs, so the return value is never seen.
+
+The first argument to "format", "t", indicates that the output is to be
+sent to the default place. Ordinarily this will be the toplevel. The
+second argument is a string that serves as a template for output.
+Within this string, each ~a indicates a position to be filled, and the
+~% indicates a newline. The positions are filled by the values of the
+remaining arguments, in order.
+
+The standard function for input is "read". When given no arguments, it
+reads from the default place, which will usually be the toplevel. Here
+is a function that prompts the user for input, and returns whatever is
+entered:
+|#
+
+(defun askem (string)
+  (format t "~a ~%" string)
+  (read))
+
+#|
+It behaves as follows:
+
+> (askem "How old are you? ")
+How old are you? 29
+29
+
+Bear in mind that "read" will sit waiting indefinitely until you type
+something and (usually) hit return. So it's unwise to call "read" without
+printing an explicit prompt, or your program may give the impression that
+it is stuck, while in fact it's just waiting for input.
+
+The second thing to know about "read" is that it is very powerful: "read"
+is a complete Lisp parsers. It doesn't just read characters and return
+them as a string. It parses what it reads, and returns the Lisp object
+that results. In the case above, it returned a number.
+
+Short as it is, the definition of "askem" shows something we haven't seen
+before in a function. Its body contains more than one expression. The body
+of a function can have any number of expressions. When the function is
+called, they will be evaluated in order, and the function will return the
+value of the last one.
+
+In all the sections before this, we kept to what is called "pure Lisp",
+that is, Lisp without side-effects. A side-effect is some change to the
+state of the world that happens as a consequence of evaluating an
+expression. When we evaluate a pure Lisp expression like (+ 1 2), there
+are no side-effects; it just returns a value. But when we call "format",
+as well as returning a value, it prints something. That's one kind of
+side-effect.
+
+When we are writing code without side-effects, there is no point in
+defining functions with bodies of more than one expression. The value of
+the last expression is returned as the value of the function, but the
+values of any preceding expressions are thrown away. If such expressions
+didn't have side-effects, you would have no way of telling whether Lisp
+bothered to evaluate them all.
+
+Variables
+---------
+
+
+
+|#
+
 
