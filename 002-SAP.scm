@@ -351,7 +351,7 @@
 | keyword "cond" is derived from the word conditional.    Using "cond", we write a |
 | procedure called  "type-off" that tests its argument and returns the type of the |
 | item as described above:                                                         |
-|                                                                                  |                                  
+|                                                                                  |                                 
 |#
 
 (define type-of
@@ -363,3 +363,72 @@
      ((symbol? item) 'symbol)
      (else 'some-other-type))))
 
+#|
+| Let us analize the "cond" expression. In this case, the cond expression has five |
+| clauses, each represented by  two expression enclosed  in parentheses. The first |
+| clase, ((pair? item) 'pair), has as its first  expression (pair? item), which is |
+| a boolean expression with the value #t or #f depending on whether the value that |
+| it is bound to item  is or is not a pair. We shall also refer to this expression |
+| as the condition. If the condition evaluates to true, then the second expression |
+| in the clause (the consequence), 'pair, is evaluated and pair is returned.If the |
+| condition in the first  caluse evaluates to false,  the condition in  the second |
+| clause ((null? item) 'empty-list) is evaluated.  If one of the subsequent condi- |
+| tions is true, then its consequent is evaluated and that value is returned.  The |
+| last clause has the keyword "else" as it first expression,and if all of the pre- |
+| creding conditions are false,the expression following else is evalauted, and its |
+| value is returned.  The expression following else is referred to as the alterna- |
+| tive. In general, the syntax of a "cond" expression is                           |
+|                                                                                  |
+|                       (cond                                                      |
+|                         (condition1 consequent1)                                 |
+|                         (condition2 consequent2)                                 |
+|                               .          .                                       |
+|                         (conditionN consequentN)                                 |
+|                         (else alternative))                                      |
+|                                                                                  |
+| where for each k = 1,...,N,  the expression (conditionk consequentk) and the ex- |
+| pression (else alternative) are called clauses.  The conditionk and consequentk, |
+| for k = 1,...,N, and the alternative are expressions, and else is a keyword.Each |
+| of the conditional parts of the clauses is  evaluated in succession until one is |
+| true, in which case the corresponding  consequent is evaluated, and the value of |
+| the cond expression is  the same as the value of the consequent corresponding to |
+| the true condition.   If none of the conditions is true, the cond expression has |
+| the same value as the alternative, which is in the last cond clause, know as the |
+| else clause.                                                                     |
+| Note that the else clause is optional.If it is omitted and all of the conditions |
+| are false,  then Scheme does not specify the value that is returned as the value |
+| of the cond expression. We shall avoid using cond expressions that return unspe- |
+| cified values.                                                                   |
+| Scheme has another way of handling  conditional expressions  that have only  two |
+| cases. We can also use the special form with keyword if.Suppose we want to write |
+| a procedure "car-if-pair" that does the following:                               |
+|                                                                                  |
+|        If its argument is a pair, return the car of the pair.                    |
+|        Otherwise, return the argument.                                           |
+|                                                                                  |
+| Here is the procedure "car-if-pair" using cond:                                  |
+|#
+
+(define car-if-pair
+  (lambda (item)
+    (cond
+     ((pair? item) (car item))
+     (else item))))
+
+;; Or using an if expression, it can be written as:
+
+(define car-if-pair2
+  (lambda (item)
+    (if (pair? item)
+	(car item)
+	(item))))
+
+#|
+| In general, the syntax of an if expression is:                                   |
+|                                                                                  |
+|          (if condition consequent alternative)                                   |
+| or                                                                               |
+|          (if condition consequent)                                               |
+|                                                                                  |
+|
+|#
