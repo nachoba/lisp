@@ -32,8 +32,8 @@
 |    When we write (cons 19 '()) , we get a list with one number in it, (19).  If  |
 |    we write (cons 'bit '()), we get a list with one symbol on it, namely (bit).  |
 |    Now let us write a procedure of one variable that  returns a list containing  |
-|    the the value given to that variable as its only element.   We do it with an  |
-|    expression called a "lambda":                                                 |
+|    the value given to that variable as its only element.We do it with an expres- |
+|    sion called a "lambda":                                                       |
 |                                                                                  |
 |                                      (lambda (item) (cons item '()))             |
 |                                                                                  |
@@ -184,7 +184,7 @@
 |                                                                                  |
 | In general, we use helping procedures to make code easy to understand.           |
 |                                                                                  |
-| We have used and defined procedures to  build lists containing  one time and two |
+| We have used and defined procedures to  build lists containing  one item and two |
 | items. Scheme provides  a procedure "list",  which takes any number of arguments |
 | and constructs a list containing those arguments. For example:                   |
 |                                                                                  |
@@ -430,5 +430,307 @@
 | or                                                                               |
 |          (if condition consequent)                                               |
 |                                                                                  |
-|
+|                                                                                  |
+| In the first case, if condition  is true, the value of consequent is returned as |
+| the value of the if expression; if condition is  false, the value of alternative |
+| is returned as the value of the if expression.  In the second case, the alterna- |
+| tive is not present.  In this "one-armed if", if condition is true, the value of |
+| consequent is returned as the value of the if expression. If it is false, an un- |
+| specified value is returned.                                                     |
+| If expressions can be nested, enabling us to write the procedure "type-of" given |
+| above as follows:                                                                |
 |#
+
+(define type-of2
+  (lambda (item)
+    (if (pair? item)
+	'pair
+	(if (null? item)
+	    'empty-list
+	    (if (number? item)
+		'number
+		(if (symbol? item)
+		    'symbol
+		    'some-other-type))))))
+
+#|
+| Any cond expression can be written as nested if expressions,but as the number of |
+| cases increases, the nesting of the if expressions gets deeper,  and the meaning |
+| of the whole conditional expression is obscured.This, using a cond expression is |
+| often advantageous when there are several cases.                                 |
+| The use of conditional expressions with either if or cond  depends upon first e- |
+| valuating a condition.The condition may be simple, such as (null? ls), or it may |
+| involve something like testing  whether ls is a pair and whether its car is some |
+| symbol such as cat.A condition that involves a combination of two or more simple |
+| conditions is called a compound condition.We build compound conditions by combi- |
+| ning simple conditions with the logical composition operators: and, or, and not. |
+| The compound condition mentioned above can be written using "and" as follows:    |
+|                                                                                  |
+|                   (and (pair? ls) (eq? (car ls)) 'cat)                           |
+|                                                                                  |
+| The syntax for each of these logical operators is given below:                   |
+|                                                                                  |
+|                   (and expr1 expr2 ... exprn)                                    |
+|                   (or  expr1 expr2 ... exprn)                                    |
+|                   (not expr)                                                     |
+|                                                                                  |
+| The "and" expression evaluates each of the subexpressions: expr1,expr2,...,exprn |
+| in succession.   If any one of them is true, it stops evaluating the rest of the |
+| subexpressions, and the value of the "and" expression is #f.  If all of the sub- |
+| expressions have true values, the value of the last subexpression is returned as |
+| the value of the "and" expression.                                               |
+|                                                                                  |
+| The "or" expression evaluates each of the subexpressions:  expr1,expr2,...,exprn |
+| in succession.   If any one of them is true, it stops evaluation the rest of the |
+| subexpressions,  and the value of the "or" expression is the value of that first |
+| true subexpression.If all of the subexpressions are false, the value of the "or" |
+| expression is #f.                                                                |
+|                                                                                  |
+| The value of the "not" expression is #f when expr has a true value, and it is #t |
+| when expr is false.                                                              |
+| We illustrate the use of "and" and "or" in the following example:                |
+|#
+
+(define s-and-n-list?
+  (lambda (ls)
+    (and (pair? ls)
+	 (symbol? (car ls))
+	 (pair? (cdr ls))
+	 (number? (cadr ls)))))
+
+#|
+| The predicate "s-and-n-list?" takes a list as its argument. The value of the ex- |
+| pression (s-and-n-list? some-list) is #t if:                                     |
+|                                                                                  |
+| * some-list is a pair,                                                           |
+| * and the first item in some-list is a symbol,                                   |
+| * and the cdr of some-list is a pair,                                            |
+| * and the second item in some-list is a number.                                  |
+|                                                                                  |
+| Otherwise, the value of (s-and-n-list? some-list) is #f. For example:            |
+|                                                                                  |
+|                   (s-and-n-list? '(a 1 b))  => #t                                |
+|                   (s-and-n-list? '(a b 1))  => #f                                |
+|                                                                                  |
+| The test to determine  whether the list is a pair is necessary since we can only |
+| take the car of a pair.   If the list is empty, the evaluation of the car of the |
+| list never takes place. The evaluation terminates on the first false value.      |
+|#
+
+(define s-or-n-list?
+  (lambda (ls)
+    (and (pair? ls)
+	 (or (symbol? (car ls))
+	     (number? (car ls))))))
+
+#|
+| The predicate "s-or-n-list?" takes a list as its argument.  The expression is #t |
+| if:                                                                              |
+|                                                                                  |
+| * some-list is a pair,                                                           |
+| * and either the first item in some-list is a symbol or a number.                |
+|                                                                                  |
+| Otherwise (s-or-n-list? some-list) is #f.                                        |
+| There are occasions  when we want to  test whether a list contains precisely one |
+| item, that is, whether the list is a singleton list. It is easy to define a pre- |
+| dicate  "singleton-list?"  that tests whether its argument is a pair and whether |
+| it contains just one element.  To test whether a pair contains just one element, |
+| it is enough to test whether its cdr is empty. Thus we can write:                |
+|#
+
+(define singleton-list?
+  (lambda (ls)
+    (and (pair? ls) (null? (cdr ls)))))
+
+#|
+| This definition makes use of the fact that the empty list is not a pair.Thus the |
+| nonempty  list whose cdr is empty must contain just one  item and is thus a sin- |
+| gleton list.                                                                     |
+|                                                                                  |
+| Exercises                                                                        |
++----------------------------------------------------------------------------------+
+| [2.6] Assume that a, b, and c are expressions that evaluate to #t and that e and |
+|       f are expressions that evaluate to #f.    Decide whether the following ex- |
+|       pressions are true or false.                                               |
+|      a. (and a (or b e))              => (and #t (or #t #f))               => #t |
+|      b. (or e (and (not f) a c))      => (or #f (and #t #t #t))            => #t |
+|      c. (not (or (not a) (not b)))    => (not (or #f #f))                  => #t |
+|      d. (and (or a f) (not (or b e))) => (and (or #t #f) (not (or #t #f))) => #f |
+|                                                                                  |
+| [2.7] Decide whether the following expressions are true or false if expr is some |
+|       boolean expression.                                                        |
+|      a. (or (symbol? expr) (not (symbol? expr)))                           => #t |
+|      b. (and (null? expr) (not (null? expr)))                              => #f |
+|      c. (not (and (or expr #f) (not expr)))                                => #t |
+|      d. (not (or expr #t))                                                 => #f |
+|                                                                                  |
+| [2.8] Decide whether the following expressions  are true or false using the pro- |
+|       cedure "s-and-n-list?" as defined in this section.                         |   
+|      a. (s-and-n-list? '(2 pair 12 dozen))        => #f                          |
+|      b. (s-and-n-list? '(b 4 u c a j))            => #t                          |
+|      c. (s-and-n-list? '(a ten))                  => #f                          |
+|      d. (s-and-n-list? '(a))                      => #f                          |
+|                                                                                  |
+| [2.9] Decide  whether the following expressions are true or false using the pro- |
+|       cedure "s-or-n-list?" as defined in this section.                          |
+|      a. (s-or-n-list? '(b))                       => #t                          |
+|      b. (s-or-n-list? '(c 2 m))                   => #t                          |
+|      c. (s-or-n-list? '(10 10 10 10))             => #t                          |
+|      d. (s-or-n-list? '())                        => #f                          |
+|                                                                                  |
++----------------------------------------------------------------------------------+
+| [2.4] RECURSION                                                                  |
+| We above  that certain procedures use other procedures as helping procedures. In |
+| this section, we  define procedures  that use themselves as helping  procedures. |
+| When a procedure  calls itself within the body of the lambda expression defining |
+| it, we say that the procedure is recursive. To introduce the idea of a recursive |
+| procedure, we set as our goal the definition of a procedure last-item, that when |
+| applied to a nonempty list, returns the last top-level item in the list.Here are |
+| some examples of applications of last-item:                                      |
+|                                                                                  |
+|                   (last-item '(1 2 3 4 5))                 => 5                  |
+|                   (last-item '(a b (c d)))                 => (c d)              |
+|                   (last-item '(cat))                       => cat                |
+|                   (last-item '((cat)))                     => (cat)              |
+|                                                                                  |
+| It is a good idea to begin with the simplest cases of the arguments to which the |
+| procedure is applied. In this case, the simplest nonempty list is a list contai- |
+| ning only one item.  For example, if the list is (a), then the last item is also |
+| the first item, and applying car to this list produces the last item. This would |
+| worl with any list containing  only one top-level item, for the  car of the list |
+| is both its first and its last top-level item. Let us use the variable ls as the |
+| parameter in the definiton of last-item.How can we test whether ls contains only |
+| one top-level item? When ls contains only one top-level item,its cdr is the emp- |
+| ty list. Thus the boolean expression (null? (cdr ls)) returns #t when  -and only |
+| when-  the nonempty list ls contains only one top-level item. Thus, we may use a |
+| cond expression to test  whether we have the case of  a one-item list and return |
+| the car of the list if that is the case.   We can then begin our program as fol- |
+| lows:                                                                            |
+|                                                                                  |
+|                   (define last-item                                              |
+|                     (lambda (ls)                                                 |
+|                       (cond                                                      |
+|                         ((nul? (cdr ls)) (car ls))                               |
+|                         ... )))                                                  |
+|                                                                                  |
+| If we consider now a list ls containing more than one top-level item, the cdr of |
+| that list contains one fewer top-level items,but still includes the last item of |
+| the original list. Each successive application of cdr reduces the number of top- |
+| level items by one, until we finally  have a list containing only one  top-level |
+| item, for which we have a solution.                                              |
+| In this sense,  application of cdr to the list reduces  the problem to a simpler |
+| case. This leads us to consider the list obtained by  evaluating (cdr ls), which |
+| contains all of the items of ls except its first item. The last item in (cdr ls) |
+| is the same as the last item in ls.   For example, the list (a b c) and the list |
+| (b c), which is its cdr, have the same last item, c.  Thus if we call the proce- |
+| dure last-item as a helping  procedure to be applied to (cdr ls), we get the de- |
+| sired last item of the original list, and that solves our problem.  Thus to com- |
+| plete the  definition of  last-item, we add  the else clause  to handle the case |
+| the list contains more than one item:                                            |
+|#
+
+(define last-item
+  (lambda (ls)
+    (cond
+     ((null? (cdr ls)) (car ls))
+     (else (last-item (cdr ls))))))
+#|
+| To see that this does define the procedure last-item so that it returns the cor- |
+| rect result for any non empty list "ls", we consider first a list (a) containing |
+| only one item.  Then te condition in the first cond clause is true, and (car ls) |
+| does give us the last (which is also the first) item, a, in the list.  Thus, the |
+| procedure last-item works on any list containing only one item. Now let's consi- |
+| der the case in which ls is a list (a b) containing two items.Then its cdr, (b), |
+| contains one item, so the procedure last-item does work for (cdr ls),allowing us |
+| to use it as a helping procedure  in the else clause  to get the correct result. |
+| Thus last-item solves the problem for any list of two items. Now we use the fact |
+| that last-item works on the cdr of any three-item list to conclude that it works |
+| on the three-item list itself. We can continue this process of increasing by one |
+| the number of items in the list indefinitely, showing  that last-item solves the |
+| problem for any list.                                                            |
+| Since the procedure last-item called itself as a helping procedure, last-item is |
+| a recursive procedure. Our strategy in general in designing a recursive procedu- |
+| re on a list is first to identify the  "simplest case"  and write the expression |
+| that solves the problem for that case as the consequent in the first cond clause.|
+| We call this simplest case the "base case" or "terminating condition".   We then |
+| identify a simplifying operation, which on repeated application to the list pro- |
+| duces the base case.  Then in each of the other cases, we solve the problem with |
+| some expression  that calls the  recursive procedure as a helping  procedure ap- |
+| plied to the simplified list.  In our example, the base case is the list consis- |
+| ting of only one item. The simplifying operation is cdr, and in the other cases, |
+| we see that the expression that solves the problem applies last-item to the sim- |
+| plified list (cdr ls).                                                           |
+|                                                                                  |
+| To give us a better intuition about how last-item works, we shall apply the pro- |
+| cedure last-item to the list (a b c):                                            |
+| 1. (last-item '(a b c)) => (cdr ls) is not empty, so the alternative in the else |
+|    clause is evaluated. So we have to evaluate (last-item (cdr ls))              |
+| 2. (last-item (cdr ls)) => Since (cdr ls) is (b c),  we must evaluate the follo- |
+|    wing expression (last-item '(b c))                                            |
+| 3. (last-item '(b c))   => Once again, (cdr ls) is not empty, so we evaluate the |
+|    alternative in the else clause. This tells us to apply last-item to (cdr ls), |
+|    which is now (c).                                                             |
+| 4. (last-item '(c))     => This time (cdr ls) is the empty list. Thus the conse- |
+|    quent is evaluated, that is, (car '(c)) evaluates to c.                       |
+|                                                                                  |
+| The recursion in the illustration  stops when the list is simplified to the base |
+| case. In that case, the condition in the first cond clause is true.  We call the |
+| condition used to sopt the recursion the "terminating condition". In our example |
+| the terminating condition is (null? (cdr ls)).   Generally, whenever a recursive |
+| procedure is defined, a  terminanting condition must be included so that the re- |
+| cursion will eventually stop.                                                    |
+| We usually begin the definition of a recursive procedure by writing the termina- |
+| ting condition as the first cond clause.We then proceed with the rest of the de- |
+| finition.                                                                        |
+|                                                                                  |
+| In the preceding discussion we introduced the substitution model. Using this mo- |
+| del,  we can determine the value of an expression by substituting values for pa- |
+| rameters.   There will be times when the substitution model does not work and we |
+| use the environment model. In that approach we just remember the bindings of va- |
+| riables and avoid any substitutions.                                             | 
+|                                                                                  |
+| Let us define a procedure "member?"  that decides for us whether its first argu- |
+| ment is equal?  to one of the top-level items in the list that is its second ar- |
+| gument. For example:                                                             |
+|                                                                                  |
+| 1. (member? 'cat '(dog hen cat pig))                => #t                        |
+| 2. (member? 'fox '(dog hen cat pig))                => #f                        |
+| 3. (member? 2 '(1 (2 3) 4))                         => #f                        |
+| 4. (member? '(2 3) '(1 (2 3) 4))                    => #t                        |
+| 5. (member? 'cat '())                               => #f                        |
+|                                                                                  |
+| We begin the definition of "member?" by determining the base case. Regardless of |
+| what item is, if ls is the empty list, #f is returned. This is the simplest case |
+| and will be taken as our base case. To test for the base case, we use the predi- |
+| cate null? so the terminating condition is (null? ls).    The consequent for the |
+| terminating condition is #f. We can therefore begin the definition of member? as |
+| a procedure having two paramters, item and ls:                                   |
+|                                                                                  |
+|                   (define member?                                                |
+|                     (lambda (item ls)                                            |
+|                       (cond                                                      |
+|                         ((null? ls) #f)                                          |
+|                         ...)))                                                   |
+|                                                                                  |
+| Now given any list,  what is the simplifying operation that simplifies ls to the |
+| empty list? It is again the procedure cdr.Assume that ls is not empty.If we know |
+| the value of (member? item (cdr ls)), how do we get the value for the expression |
+| (member? item ls)?                                                               |
+| Well, when is the latter statement true?  It is true if either the first item in |
+| ls is the same as item of if item is a member of  the rest of the list following |
+| the first item. This can be written as the or expression:                        |
+|                                                                                  |
+|                   (or (equal? (car ls) item) (member? item (cdr ls)))            |
+|                                                                                  |
+| Thus in the case when ls is not empty, the above expression is true exactly when |
+| the expression (member? item ls) is true. We then complete the definition of the |
+| procedure member? with:                                                          |
+|#
+
+(define member?
+  (lambda (item ls)
+    (cond
+     ((null? ls) #f)
+     (else (or (equal? (car ls) item)
+	       (member? item (cdr ls)))))))
+
