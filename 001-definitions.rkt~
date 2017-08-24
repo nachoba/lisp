@@ -1,0 +1,32 @@
+#lang racket
+#|
+Simple Definitions and Expressions
+----------------------------------
+
+A program module is written as:
+
+#lang <langname> <topform>
+
+where a <topform> is either a <definition> or an <expr>.
+
+Definitions
+-----------
+A definition of the form:
+
+(define <id> <expr>)
+
+binds <id> to the result of <expr>, while
+
+
+(define (<id> <id> ...) <expr> ....)
+
+binds the first <id> to a function (also called a procedure) that arguments as named by
+the remaining <id>. In the function case <expr> ... are the body of the function. When
+the function is called it returns the result of the last <expr>.
+|#
+
+(define pie 3)              ; define pie to be 3
+(define (piece srt)         ; defines piece as a function of one argument
+  (substring str 0 pie))
+
+
