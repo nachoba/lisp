@@ -366,7 +366,7 @@
 #|
 | Let us analize the "cond" expression. In this case, the cond expression has five |
 | clauses, each represented by  two expression enclosed  in parentheses. The first |
-| clase, ((pair? item) 'pair), has as its first  expression (pair? item), which is |
+| clause, ((pair? item) 'pair), has as its first expression (pair? item), which is |
 | a boolean expression with the value #t or #f depending on whether the value that |
 | it is bound to item  is or is not a pair. We shall also refer to this expression |
 | as the condition. If the condition evaluates to true, then the second expression |
@@ -734,3 +734,133 @@
      (else (or (equal? (car ls) item)
 	       (member? item (cdr ls)))))))
 
+#|
+| The procedure member? is recursive since it calls itself. Let us review the rea- |
+| soning used in the program for member?. If the terminating condition  (null? ls) |
+| is true, then item is not in ls, and the consequent is false.  Otherwise we look |
+| at the alternative,  which is true if either  item is the first item in ls or if |
+| item is in (cdr ls) and is otherwise false.                                      |
+| When member? calls itself with argument (cdr ls),  its parameter is bound to the |
+| value if (cdr ls),  which is a shorter  list than the parameter's previous bind- |
+| ding to ls.    In each successive recursive procedure call, the list is shorter, |
+| and  the  process is guaranteed to stop  because of the  terminating  condition: |
+| (null? ls).                                                                      |
+| In order to use a list as the first argument to  member?  we used the  predicate |
+| equal? to make the sameness test in the else clause.If we know that the items to |
+| which item is bound will always be symbols,  we can use eq? in place  of equal?. |
+| The procedure so defined using eq? is named memq? to distinguish it from member? |
+| which is defined using equal? for the sameness test. Similarly,  if we know that |
+| the items to which item is bound will always be either symbols or numbers,we can |
+| use eqv? for the sameness test and call the procedure so defined memv? (*)       |
+|                                                                                  |
+| We have now defined the procedure last-item, which picks the last top-level item |
+| out of a list, and the procedure member?,  which tests whether an item is a top- |
+| level element in a given list.  We continue illustrating how to define recursive |
+| procedures  with  the definition  of another useful  procedure for  manipulating |
+| lists.  The procedure  "remove-1st" removes  the first top-level occurrence of a |
+| given item from a list of items. For exmaple:                                    |
+|                                                                                  |
+| 1. (remove-1st 'fox '(hen fox chick cock))      => (hen chick cock)              |
+| 2. (remove-1st 'fox '(hen fox chick fox cock))  => (hen chick fox cock)          |
+| 3. (remove-1st 'fox '(hen (fox chick) cock))    => (hen (fox chick) cock)        |
+| 4. (remove-1st 'fox '())                        => ()                            |
+| 5. (remove-1st '(1 2) '(1 2 (1 2) ((1 2))))     => (1 2 ((1 2)))                 |
+|                                                                                  |
+|   (*) Note: Scheme provides the three procedures "member", "memq", and "memv",   |
+|             written without the question mark. These behave somewhat differen-   |
+|             tly from the ones we defined with the question mark in  that if i-   |
+|             tem is not found, false is returned,but if the item is found in ls   |
+|             the sublist whose car is item is returned. For example:              |
+|             (memq 'b '(a b c))   => (b c)                                        |
+|                                                                                  |
+| In general,  the procedure remove-1st takes two arguments, an element item and a |
+| list ls.It builds a new list from ls with the first top-level occurrence of item |
+| removed from it. We again begin looking at the simplest case, in which ls is the |
+| empty list.Since item does not occur at all in the empty list, the list we build |
+| is still the empty list.  The test for the base case is then (null? ls), and the |
+| value returned in its consequent is "()".   Thus the definition of the procedure |
+| remove-1st begin with:                                                           |
+|                                                                                  |
+|                   (define remove-1st                                             |
+|                     (lambda (item ls)                                            |
+|                       (cond                                                      |
+|                         ((null? ls) '())                                         |
+|                         ... )))                                                  |
+|                                                                                  |
+| If "ls" is not empty, the procedure that simplifies it to the base case is again |
+| cdr. If we already know  (remove-1st item (cdr ls)), that is, if we have a list, |
+| consisting of the first top-level occurrence of item removed form  (cdr ls), how |
+| do we build up a list that is  obtained by removing the  first top-level  occur- |
+| rence of item in ls?.  There are two cases to consider. Let's first consider the |
+| example in which we remove the  first occurrence of "a" from the list (a b c d). |
+| Since "a" is the first item in the list, we get the desired result by merely ta- |
+| king the cdr of the original list.  This is the first case  we consider.  If the |
+| first top-level item in ls is the same as  item, then we get the desired list by |
+| simply using (cdr ls). This case can be added to the definition of remove-1st by |
+| writing                                                                          |
+|                                                                                  |
+|                   (define remove-1st                                             |
+|                     (lambda (item ls)                                            |
+|                       (cond                                                      |
+|                         ((null? ls) '())                                         |
+|                         ((equal? (car ls) item) (cdr ls))                        |
+|                         ... )))                                                  |
+|                                                                                  |
+| The only case left to be considered is when "ls" is not empty, and its first top |
+| level item is not the same as "item". Consider the example in which we apply the |
+| procedure "remove-1st" to remove the letter c from the list (a b c d).  The list |
+| is not empty and its first item is not c. Thus the list we build begins with "a" |
+| and continues with the items in (b d).But (b d) is just the list obtained by re- |
+| moving c from (b c d).   The final result is then (a b d), which was obtained by |
+| building the list                                                                |
+|                                                                                  |
+|                   (cons (car '(a b c d)) (remove-1st 'c (cdr '(a b c d))))       |
+|                                                                                  |
+| In general, the list we are building now begins with the first element of ls and |
+| has in it the elements of  (cdr ls)  with the first top-level occurrence of item |
+| removed.                                                                         |
+| But this is obtained when we cons (car ls) onto  (remove-1st item (cdr ls)),  so |
+| the final case is disposed of by adding the else clause to the definition, which |
+| is given below                                                                   |
+|#
+
+(define remove-1st
+  (lambda (item ls)
+    (cond
+     ((null? ls) '())
+     ((equal? (car ls) item) (cdr ls))
+     (else (cons (car ls) (remove-1st item (cdr ls)))))))
+
+#|
+| To get a better understading of how recursion works, let's walk through the eva- |
+| luation of the procedure "remove-1st"; for exmaple  (remove-1st 'c '(a b c d))   |
+| Since the list (a b c d) is not empty and the first entry is not c, the alterna- |
+| tive in the else clause is evaluated. This gives us                              |
+|                   (cons 'a (remove-1st 'c '(b c d)))                             |
+| To get the value of this expression, we must evaluate the remove-1st  subexpres- |
+| sion. Once again, the list (b c d) is not empty, and the first  item in the list |
+| is not the same as c. Thus the alternative in the else caluse is evaluated. This |
+| gives us as the value of the whole expression above:                             |
+|                   (cons 'a (cons 'b (remove-1st 'c '(c d))))                     |
+| Once again, to get the value of this expression, we must evaluate the remove-1st |
+| subexpression. Now the list (c d) is not empty, but it first item IS the same as |
+| c. Thus the condition in the second cond clause in the definition of remove-1st, |
+| is true and the value of its consequent is (d).Thus the above expression has the |
+| value:                                                                           |
+|                   (cons 'a (cons 'b '(d)))                                       |
+| which can be simplified to give the value                                        |
+|                   (a b d)                                                        |
+| This is the value returned by the procedure call.  In the next section, we shall |
+| see how the computer can help us walk through a  procedure application. In order |
+| to be able to remove a sublist from a given list,  the predicate equal? was used |
+| to test for sameness in the second cond clause. If we know that all of the argu- |
+| ments to which item will be bound are symbols,  we can use eq? to test for same- |
+| ness. The procedure defined using eq? instead of equal? is named "remq-1st". Si- |
+| milarly, if we restrict the arguments to which item will be  bound to symbols or |
+| numbers, we can use eqv? to test for sameness in the second cond  clause, and we |
+| name the procedure so defined "remv-1st".                                        |
+|                                                                                  |
+| Exercises                                                                        |
++----------------------------------------------------------------------------------+
+|
+|#
