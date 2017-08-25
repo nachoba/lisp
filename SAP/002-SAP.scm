@@ -597,7 +597,7 @@
 | procedure is applied. In this case, the simplest nonempty list is a list contai- |
 | ning only one item.  For example, if the list is (a), then the last item is also |
 | the first item, and applying car to this list produces the last item. This would |
-| worl with any list containing  only one top-level item, for the  car of the list |
+| work with any list containing  only one top-level item, for the  car of the list |
 | is both its first and its last top-level item. Let us use the variable ls as the |
 | parameter in the definiton of last-item.How can we test whether ls contains only |
 | one top-level item? When ls contains only one top-level item,its cdr is the emp- |
@@ -675,7 +675,7 @@
 |                                                                                  |
 | The recursion in the illustration  stops when the list is simplified to the base |
 | case. In that case, the condition in the first cond clause is true.  We call the |
-| condition used to sopt the recursion the "terminating condition". In our example |
+| condition used to stop the recursion the "terminating condition". In our example |
 | the terminating condition is (null? (cdr ls)).   Generally, whenever a recursive |
 | procedure is defined, a  terminanting condition must be included so that the re- |
 | cursion will eventually stop.                                                    |
@@ -862,5 +862,48 @@
 |                                                                                  |
 | Exercises                                                                        |
 +----------------------------------------------------------------------------------+
-|
+| [2.10] Rewrite the definitions of the three procedures "last-item" "member?" and |
+|        "remove-1st" with the cond expression replaced by if expressions.         |
 |#
+
+
+#|
+| [2.11] The definition of "member?" given in this section uses an "or" expression |
+|        in the "else" clause. Rewrite the definition of "member?" so that each of |
+|        the  two subexpressions  of the "or" expression is  handled in a separate |
+|        cond clause.   Compare the resulting definition with the definition given |
+|        above of "remove-1st". 
+|#
+
+
+#|
+| [2.12] The following procedure, named mystery, takes as its argument a list that | 
+|        contains at least two-top level items.                                    |
+|#
+
+(define mystery
+  (lambda (ls)
+    (if (null? (cddr ls))
+	(cons (car ls) '())
+	(cons (car ls) (mystery (cdr ls))))))
+
+#|
+|        What is the value of (mystery '(1 2 3 4 5))? Describe the behavior of the |
+|        procedure mystery. Suggest a good name for the procedure.                 |
+|                                                                                  |
+| [2.13] Define a procedure "subst-1st" that takes three parameters: an item "new" |
+|        an item "old" and a list of items "ls". The procedure looks for the first |
+|        top-level occurrence of  the item "old" in "ls" and  replaces it with the |
+|        item new. Test your procedure on:                                         |
+|                                                                                  |
+|                 (subst-1st 'dog 'cat '(my cat is clever))  => (my dog is clever) |
+|                 (subst-1st 'b 'a '(c a b a c)              => (c b b a c)        |
+|                 (subst-1st '(0) '(*) '((*) (1) (*) (2)))   => ((0) (1) (*) (2))  |
+|                 (subst-1st 'two 'one '())                  => ()                 |
+|                                                                                  |
+|        In order to be able to include  lists as possible arguments  to which the |
+|        parameters "new" and "old"  are bound, use "equal?" to test for sameness. |
+|        Also define procedures "substq-1st" and "substv-1st" that use  "eq?"  and |
+|        "eqv?" respectively, instead of "equal?" to test for sameness.            |
+|#
+
