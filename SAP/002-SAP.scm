@@ -580,7 +580,7 @@
 |                                                                                  |
 +----------------------------------------------------------------------------------+
 | [2.4] RECURSION                                                                  |
-| We above  that certain procedures use other procedures as helping procedures. In |
+| We saw up that certain procedures use other procedures as helping procedures. In |
 | this section, we  define procedures  that use themselves as helping  procedures. |
 | When a procedure  calls itself within the body of the lambda expression defining |
 | it, we say that the procedure is recursive. To introduce the idea of a recursive |
@@ -866,6 +866,27 @@
 |        "remove-1st" with the cond expression replaced by if expressions.         |
 |#
 
+(define last-item-if
+  (lambda (ls)
+    (if (null? (cdr ls))
+	(car ls)
+	(last-item (cdr ls)))))
+
+(define member-if?
+  (lambda (item ls)
+    (if (null? ls)
+	#f
+	(or (equal? (car ls) item)
+	    (member-if? item (cdr ls))))))
+
+(define remove-1st-if
+  (lambda (item ls)
+    (if (null? ls)
+	'()
+	(if (equal? (car ls) item)
+	    (cdr ls)
+	    (cons (car ls) (remove-1st-if item (cdr ls)))))))
+
 
 #|
 | [2.11] The definition of "member?" given in this section uses an "or" expression |
@@ -874,6 +895,7 @@
 |        cond clause.   Compare the resulting definition with the definition given |
 |        above of "remove-1st". 
 |#
+
 
 
 #|
@@ -891,6 +913,13 @@
 |        What is the value of (mystery '(1 2 3 4 5))? Describe the behavior of the |
 |        procedure mystery. Suggest a good name for the procedure.                 |
 |                                                                                  |
+|        The best name for the procedure  "mystery" is "drop" as it drops the last |
+|        element of a list. What the procedures does is:                           |
+|        1. Checks if the list has at least two elements. If it has exactly two e- |
+|           elements, then gives the first element as result.                      |
+|        2. If the list  has more than  two elements conses the  first element and |
+|           calls the procedure again but with the could'r.                        |
+|                                                                                  |
 | [2.13] Define a procedure "subst-1st" that takes three parameters: an item "new" |
 |        an item "old" and a list of items "ls". The procedure looks for the first |
 |        top-level occurrence of  the item "old" in "ls" and  replaces it with the |
@@ -906,4 +935,10 @@
 |        Also define procedures "substq-1st" and "substv-1st" that use  "eq?"  and |
 |        "eqv?" respectively, instead of "equal?" to test for sameness.            |
 |#
+
+
+
+     
+
+
 
