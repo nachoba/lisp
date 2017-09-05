@@ -97,5 +97,45 @@
 
 
     [5] CONS CELLS
+    Lists in Lisp are held together with cons cells. A cons cell looks like
+    this:
+
+         +---+---+
+     <-- |   |   | -->
+         +---+---+
+
+    It's mae of two little connected boxes, both of which can point at other
+    things. A cons cell can point to another cons cell or to another type of
+    Lisp data.
+
+    By being able to point to two different things, it's possible to link
+    cons cells together into list. In fact, list in Lisp are just an
+    abstraction, all of them are actually composed of cons cells.
+
+    For example, the list '(1 2 3) would be repsented in computer memory as
+    follows:
+
+          +---+---+
+     1 <--|   |   |
+          +---+---+
+                |
+                V
+            +---+---+
+       2 <--|   |   |
+            +---+---+
+                  |
+                  V
+                +---+---+
+           3 <--|   |   |
+                +---+---+
+                      |
+                      V
+                     nil
+        
+    Each cells points to a number, as well as the next cons cells for the
+    list. The final cons cell then points at "nil", to terminate the list.
+ 
+    This is a similar concept as linked lists.
+
 
 |#
