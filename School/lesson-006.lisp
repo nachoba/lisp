@@ -131,8 +131,53 @@
 
 
     [3] THE COMMAND THAT DOES IT ALL: cond
-    
+    The "cond" form is the classic way to do branching in Lisp. It allows for
+    an implicit use of "progn", can handle more than one branch, and can even
+    evaluate several conditions in succession. 
 
+    Let's see an example:
+|#
+
+(defvar *arch-enemy* nil)
+
+(defun pudding-eater (person)
+  (cond
+    ((eq person 'henry) (setf *arch-enemy* 'stupid-lisp-alien)
+     '(curse you lisp alien - you ate my pudding))
+    ((eq person 'johnny) (setf *arch-enemy* 'useless-old-johnny)
+     '(i hope you choked on my pudding johnny))
+    (t '(why you eat my pudding stranger?))))
+
+#|
+
+    The body of a "cond" uses a layer of parentheses to separate the different
+    branches of the condition.
+
+    The first expression of each parenthesized part contains the condition for
+    making that branch active. The conditions in a "cond" form are always
+    checked from the top down, so the first succesful match drives the behavior.
+
+    In this example, the last branch has a condition "t" (for true), that
+    guarantees that at least the last branch will always be evaluated. This is
+    a common "cond" idiom.
+
+    As with "when" and "unless", the triggered branch may contain more than
+    one command, since there is an implicit "progn". 
+
+
+    [4] BRANCHING WITH case
+    It is common to use the "eq" function for conditionals, and "case" lets you
+    supply a value to compare against. Using "case", we can rewrite the previous
+    example as follows:
 
 |#
 
+(defun pudding-eater-case (person)
+  (case person
+    ((henry)   (setf *arch-enemy* 'stupid-lisp-alien)
+     '(curse you lisp alien - you ate my pudding))
+
+    ((johnny) (setf *arch-enemy* 'useless-old-johnny)
+     '(i hope you choked on my pudding johnny))
+
+    (otherwise '(why you eat my pudding stranger?))))
