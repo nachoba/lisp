@@ -136,4 +136,69 @@
     The implementers of the "member" function decided that it would be valuable
     to return the value plus the tail of the list.
 
+    But why doesn't it just return the value if found, instead of the tail? This
+    would have been a useful way to define the member function as it would allow
+    passing the original value to some other function. Unfortunately, one edge
+    case in particular would ruin this plain.
+
+    > (if (member nil '(3 4 nil 5))
+          'nil-is-in-the-list
+          'nil-is-not-in-the-list)
+
+    NIL-IS-IN-THE-LIST
+
+    The "member" function still gives the correct answer, even when we search for 
+    "nil" as the member. If the "member" function had actually returned "nil" (the
+    original value we were searching for), it would have evaluated as false, and the
+    example would have incorrectly stated that "nil" isn't in the list.
+
+
+    One function that really benefits from rich return values is "find-if":
+  
+    > (find-if #'oddp '(2 4 5 6))
+    
+    5
+
+
+    > (if (find-if #'oddp '(2 4 5 6))
+          'there-is-an-odd-number
+          'there-is-no-odd-number)
+
+    THERE-IS-AN-ODD-NUMBER
+
+    The "find-if" function takes another function (in this case "oddp") as a parameter.
+    "find-if" will find the first value in the list for which "oddp" returns true. You
+    can see clearly how "find-if" can fill dual roles; either as a retriever of values
+    matching some constraint or as a true/false value inside a condition.
+
+    But if we try our edge case again, searching for a "nil" value, we get a strange
+    result:
+
+    > (find-if #'null '(2 4 nil 6))
+
+    NIL
+
+    The "null" function, which returns true for any of the "nil" values, correctly find
+    the "nil". Unfortunately, in this one annoying case, we would not want to use the
+    "find-if" inside a conditional statement, because a correctly found value still
+    returns a result that evaluates as false.
+
+
+    [4] COMPARING STUFF: eq, equal, AND MORE
+    If you want to compare two values in Lisp to find out if they are "the same" you
+    will find a hughe asortment of different functions that purport to accomplish this.
+    Of these: "equal", "eql", "eq", "=", "string-equal", and "equalp" are the most
+    commonly used.
+
+    A lisper must understand the subtleties of these functions intimately in order to
+    know how to compare values correctly.
+
+    The simplest rule to have in mind is: 
+    1. Use "eq" to compare symbols.
+    2. Use "equal" for everything else.
+
+
+    The "eq" function is the simplest of all the Lisp comparision functions, and it's
+    also very fast. It doesn't really work for comparing items besides symbols, but as
+    symbols play a central role in Lisp, this is a very useful function.
 |#
