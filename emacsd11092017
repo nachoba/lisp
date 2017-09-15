@@ -1,0 +1,110 @@
+
+;; Added by Package.el.  This must come before configurations of
+;; installed packages.  Don't delete this line.  If you don't want it,
+;; just comment it out by adding a semicolon to the start of the line.
+;; You may delete these explanatory comments.
+(require 'package)
+(package-initialize)
+
+
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-archives
+   (quote
+    (("gnu" . "http://elpa.gnu.org/packages/")
+     ("melpa" . "http://melpa.org/packages/"))))
+ '(package-directory-list (quote ("~/.emacs.d/packages/")))
+ '(package-selected-packages
+   (quote
+    (popup macrostep auto-complete ac-slime company rainbow-delimiters slime slime-company)))
+ '(scroll-bar-mode nil)
+ '(tool-bar-mode nil))
+
+
+
+;; connect to SBCL
+(load (expand-file-name "~/quicklisp/slime-helper.el"))
+(setq inferior-lisp-program "/usr/local/bin/sbcl")
+(slime-setup '(slime-fancy slime-banner slime-company slime-sbcl-exts))
+(require 'slime-autoloads)
+
+
+;; using rainbow delimiters
+;; (add-to-list 'load-path "~/.emacs.d/packages/")
+(require 'rainbow-delimiters)
+(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(rainbow-delimiters-depth-1-face ((t (:foreground "brown1"))))
+ '(rainbow-delimiters-depth-2-face ((t (:foreground "orange2"))))
+ '(rainbow-delimiters-depth-3-face ((t (:foreground "Green"))))
+ '(rainbow-delimiters-depth-4-face ((t (:foreground "turquoise1"))))
+ '(rainbow-delimiters-depth-5-face ((t (:foreground "blue violet"))))
+ '(rainbow-delimiters-depth-6-face ((t (:foreground "dodger blue")))))
+
+;; company mode for autocompletition
+(add-hook 'after-init-hook 'global-company-mode)
+
+
+;; Toggle Vertical/Horizontal split with C-x |
+
+(defun toggle-window-split ()
+  (interactive)
+  (if (= (count-windows) 2)
+      (let* ((this-win-buffer (window-buffer))
+             (next-win-buffer (window-buffer (next-window)))
+             (this-win-edges (window-edges (selected-window)))
+             (next-win-edges (window-edges (next-window)))
+             (this-win-2nd (not (and (<= (car this-win-edges)
+                                         (car next-win-edges))
+                                     (<= (cadr this-win-edges)
+                                         (cadr next-win-edges)))))
+             (splitter
+               (if (= (car this-win-edges)
+                      (car (window-edges (next-window))))
+                   'split-window-horizontally
+                   'split-window-vertically)))
+        (delete-other-windows)
+        (let ((first-win (selected-window)))
+          (funcall splitter)
+          (if this-win-2nd (other-window 1))
+          (set-window-buffer (selected-window) this-win-buffer)
+          (set-window-buffer (next-window) next-win-buffer)
+          (select-window first-win)
+          (if this-win-2nd (other-window 1))))))
+
+(global-set-key (kbd "C-x |") 'toggle-window-split)
+
+
+;; Set word line wrapping in all buffers
+(global-visual-line-mode t)
+
+;; Set emacs to show column and line mode
+(setq column-number-mode t)
+
+
+;; Set the root of the HyperSpec
+(setq common-lisp-hyperspec-root "~/Documents/Lisp/HyperSpec")
+
+;; Change default browser to w3m
+(require 'w3m)
+(setq browse-url-browser-function 'w3m-goto-url-new-session)
+(global-set-key "\C-xm" 'browse-url-at-point)
+(setq w3m-use-cookies t)
+
+;; When I want to enter the web address al by hand
+(defun w3m-open-site (site)
+   (interactive
+     (list (read-string "Enter website address: " nil nil w3m-home-page nil)))
+     (w3m-goto-url-new-session
+      (concat "http://" site)))
+
