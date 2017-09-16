@@ -40,6 +40,12 @@
 
       The project-name.asd file defines a "system". A system in CL is kind 
       of a library.
+      If we take a look at project-name.asd we will see that both package.lisp and
+      project-name.lisp are listed as required.
+
+      The file package.lisp is the definition of our system. It is the file that it
+      is first evaluated when our code is loaded.      
+
       The project-name.lisp is where your code goes.
       The README.txt is just a text file for you to fill it with information.
       Finally, the package.lisp @TODO
@@ -47,7 +53,7 @@
       
     [4] LOADING THE PROJECT
     In the REPL you can load the project by evaluating:
-    (ql:quickload :project-name)
+    (in-package :project-name)
     That will load the project-name.lisp file and all dependencies defined.
     You can compile each chunk of code doing C-c C-c in the source file.
 

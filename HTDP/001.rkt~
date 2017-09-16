@@ -1,0 +1,62 @@
+#lang racket
+#|
+
+How To Design Programs
+----------------------
+
+Preface
+-------
+The typical course on programming teaches a "tinker until it works" approach. When it
+works, students exlaim "It works!" and move on. Sadly, this phrase is also the shortest
+lie in computing, and it has cost many people many hours of their lives. In contrast,
+this book focuses on habits of good programming, addressing both professional and
+vocational programmers.
+
+Good Programming means an approach to the creation of software that relies on systematic
+thought, planning, and understanding from the very beginning, at every stage and for
+every step.
+
+* Everyone can design programs.
+* Everyone can experience the satisfaction that comes with creative design.
+* Program design -but not programming- deserves the same role in a liberal-arts education
+  as mathematics and language skills.
+
+Systematic Program Design
+-------------------------
+Any reasonably complete program consists of many building blocks: some deal with input,
+some create output, while some bridge the gap between those two. We choose to use
+functions as fundamental building blocks. The key is to discover which functions are
+needed, how to connect them, and how to build them from basic ingredients.
+
+Systematic Program Design refers to a mix of two concepts: design recipes and iterative
+refinement.
+
+ +-------------------------------------------------------------------------------+
+ | The Basic Steps of a Function Design Recipe                                   |
+ | -------------------------------------------                                   |
+ | 1. From Problem Analysus to Data Definitions: Identify the information that   |
+ |    must be represented and how it is represented in the chosen programming    |
+ |    language. Formulate data definitions and illustrate them with examples.    |
+ |                                                                               |
+ | 2. Signature, Purpose Statement, Header: State what kind of data the desired  |
+ |    function consumes and produces. Formulate a concise answer to the question |
+ |    "what" the function computes. Define a stub that lives up to the signature.|
+ |                                                                               |
+ | 3. Functional Examples: Work through examples that illustrate the function's  |
+ |    purpose.                                                                   |
+ |                                                                               |
+ | 4. Function Template: Translate the data definitions into an outline of the   |
+ |    function.                                                                  |
+ |                                                                               |
+ | 5. Function Definition: Fill in the gaps in the function template. Exploit    |
+ |    the purpose statement and the examples.                                    |
+ |                                                                               |
+ | 6. Testing: Articulate the examples as tests and ensure that the functions    |
+ |    passes all. Doing so discovers mistakes. Tests also supplement examples in |
+ |    that they help others read and understand the definition when the need     |
+ |    arises -and it will arise for any serious program.                         |
+ |                                                                               |
+ +-------------------------------------------------------------------------------+
+
+
+|#

@@ -1,4 +1,7 @@
-This repo contains my Lisp files
+This repo contains:
+
 PicoLisp
 Common-Lisp
+Racket
+Scheme
 
