@@ -4,7 +4,7 @@
     author:      ignacio sniechowski
     mail:        0800nacho@gmail.com
     date:        06/09/2017
-    revision:    
+    revision:    19/09/2017    
     description: Chapter 4 from "Land of Lisp"
                  Continue exploring conditionals.
 
@@ -201,4 +201,82 @@
     The "eq" function is the simplest of all the Lisp comparision functions, and it's
     also very fast. It doesn't really work for comparing items besides symbols, but as
     symbols play a central role in Lisp, this is a very useful function.
+
+    > (defparameter *fruit* 'apple)
+    > (cond ((eq *fruit* 'apple) 'its-an-apple)
+            ((eq *fruit* 'orange) 'its-an-orange))
+
+    ITS-AN-APPLE
+
+    NOTE: "eq" can also be used to compare conses; however, it returns true values only
+    when a cons is compared directly to itself, created by the same cons cell. That is,
+    two unrelated conses that "look" the same can fail an eq test.
+
+    If you're not dealing with two symbols, just use "equal". This command will tell you
+    when two things are "isomorphic", meaning they "look the same". It works for the
+    whole suite of basic Lisp datatypes.
+
+    > (equal 'apple 'apple)                      ;; comparing symbols
+    T
+
+    > (equal (list 1 2 3) (list 1 2 3))          ;; comparing lists
+    T
+
+    > (equal '(1 2 3) (cons 1(cons 2(cons 3))))  ;; identical lists created differently
+    T
+
+    > (equal 5 5)                                ;; comparing integers
+    T
+
+    > (equal 2.5 2.5)                            ;; comparing floating-point numbers  
+    T
+
+    > (equal "foo" "foo")                        ;; comparing strings
+    T
+ 
+    > (equal #\a #\a)                            ;; comparing characters
+    T
+
+
+    The "eql" command is similar to the "eq" command, but unlike "eq", it also handles
+    comparisions of numbers and characters.
+
+    > (eql 'foo 'foo)                 ;; comparing symbols
+    T
+
+    > (eql 3.4 3.4)                   ;; comparing numbers
+    T
+
+    > (eql #\a #\a)                   ;; comparing characters
+    T
+
+
+    The "equalp" command is the same as "equal" command, except that it can handle some
+    difficult comparison cases with a bit of extra sophistication. It can compare strings
+    with different capitalizations and can compare integers against floating-point numbers.
+
+    > (equalp "Bob Smith" "bob smith")   ;; comparing strings with different CAPS
+    T
+
+    > (equalp 0 0.0)                     ;; comparing integers against floating-point
+    T
+
+
+    The remaining comparision commands are just specializations for specific datatypes.
+    The "=" function handles numbers, "string-equal" handles strings, and "char-equal"
+    handles characters.
+
+
+    [5] SYMMARY
+    * The values "nil", "'nil", "()", and "'()" are all basically the same thing.
+    * Lisp makes it easy to check for empty lists. This makes it simple to write functions
+      that are list-eaters.
+    * Lisp conditionals, such as the "if" command, cause Lisp code to be evaluated only
+      under the right conditions.
+    * If you need a conditional command that does everything, then you want to use "cond".
+    * Comparing stuff in Lisp is complicated, but you can get by if you just use "eq" for
+      comparing symbols and "equal" for comparing everything else.
+
 |#
+
+
