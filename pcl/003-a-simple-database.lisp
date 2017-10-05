@@ -188,5 +188,66 @@
 
     IMPROVING THE USER INTERACTION
     ------------------------------
+    Our "add-record" function works fine for adding a single record but if you want
+    to add a bunch of records it is not very convenient. So we will write a function
+    to prompt the user for information about a set of CDs.
+|#
+
+(defun prompt-read (prompt)
+  (format *query-io* "~a: " prompt)
+  (force-output *query-io*)
+  (read-line *query-io*))
+
+#|
+
+    We use "format" to emit a prompt; note that there's no "~%" in the format string,
+    so the cursor will stay on the same line.
+    The call to "force-output" is necessary to ensure that Lisp doesn't wait for a
+    newline before it prints the prompt.
+    We can read a single line of text with the function "read-line".
+    The global variable *query-io* contains the input stream connected to the terminal.
+    The return value of "prompt-read" will be the value of the last form, the call to
+    "read-line", which returns the string it read (without the trailing newline).
+
+    We can combine our existing "make-cd" funtion with the "prompt-read" to build a 
+    function that makes a new CD record from data it gets by prompting for each value
+    in turn.
+
+|#
+
+(defun prompt-for-cd ()
+  (make-cd
+   (prompt-read "Title")
+   (prompt-read "Artist")
+   (prompt-read "Rating")
+   (prompt-read "Ripped [y/n]")))
+
+
+#|
+
+    The function is almost right, except for the fact that "prompt-read" returns a
+    string, which if fine for the title and artist fields but not for the rating and
+    ripped fields.
+    We will implement a quick and dirty validation using the function "parse-integer".
+
+    > (parse-integer (prompt-read "Rating"))
+
+    Unfortunately, the default behavior of "parse-integer" is to signal an error if it
+    can't parse an integer out of the string, or if there's any non-numeric junk in the
+    string. But it takes an optional keyword argument ":junk-allowed", which allows for
+    some chenge in this:
+
+    > (parse-integer (prompt-read "Rating") :junk-allowed t)
+
+    However, there's still a problem; if it can't find an integer amidst all the junk,
+    "parse-integer" will return "NIL" rather than a number. 
+    Continuing with our quick-and-dirty approach, we will want to call that 0 and
+    continue. We will use Lisp's "or" macro, which is a short-circuiting "or"; it 
+    takes a series of expressions, evaluates them one at a time, and returns the
+    first non-nil value (or "nil" if they're all "nil")
+
+    > (or (parse-integer (prompt-read "Rating") :junk-allowed t) 0)
+
+    to get a default value of 0.
 
 |#
