@@ -250,4 +250,41 @@
 
     to get a default value of 0.
 
+    Fixing the code to prompt for Ripped is quite a bit simpler, we can use the CL
+    function "y-or-n-p"
+
+    > (y-or-n-p "Ripped [y/n]: ")
+    
+    This predicate will be the most robust part of our "prompt-for-cd" as the "y-or-n-p"
+    will continue to re-prompt the user if something that is not N,n,Y,y is entered.
+
+    Putting all pieces together we can build a reasonable robust "prompt-for-cd"
+    function. 
+|#
+
+(defun prompt-for-cd2 ()
+  (make-cd
+   (prompt-read "Title")
+   (prompt-read "Artist")
+   (or (parse-integer (prompt-read "Rating") :junk-allowed t) 0)
+   (y-or-n-p "Ripped [y/n]: ")))
+
+#|
+
+    Finally, we can finish the "add a bunch of CDs" interface by wrapping the function
+    "prompt-for-cd2" in a function that loops until the user is done. We can use the
+    simple form of the "loop" macro, which repeatedly executes a body of expressions
+    until it's exited by a call to "return".
+
+|#
+
+(defun add-cds ()
+  (loop (add-record (prompt-for-cd2))
+     (if (not (y-or-n-p "Another? [y/n]: "))
+	 (return))))
+
+#|
+
+    Now you can use "add-cds" to add some more CDs to the database.
+
 |#
