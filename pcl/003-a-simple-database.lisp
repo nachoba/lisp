@@ -1,6 +1,7 @@
 #|
 
-    Chapter 03 : A Simple Database
+    CHAPTER 03 : A SIMPLE DATABASE
+    ------------------------------
 
     In this chapter we'll write a simple database for keeping track of CDs.
     Common Lisp provides three distinct kinds of operators: functions, macros, and 
@@ -286,5 +287,68 @@
 #|
 
     Now you can use "add-cds" to add some more CDs to the database.
+
+
+    SAVING AND LOADING THE DATABASE
+    -------------------------------
+    In CL, if we are using a list as data structure, is easy to save that data to
+    a file and reloaded it later. Here is a "save-db" function that takes a filename
+    as an argument and saves the current state of the database:
+
+|#
+
+(defun save-db (filename)
+  (with-open-file (out filename
+		       :direction :output
+		       :if-exists :supersede)
+    (with-standard-io-syntax
+      (print *db* out))))
+
+#|
+
+    The "with-open-file" macro opens a file, binds the stream to a variable,
+    executes a set of expressions, and then closes the file. It also makes sure
+    the file is closed even if something goes wrong while evaluating the body.
+
+    The list directly after "with-open-file" is not a function call but rather
+    part of the syntax defined by the function. It contains the name of the 
+    variable that will hold the file stream to which you'll write within the body
+    of "with-open-file" (in this case that variable is "out"), a value that must
+    be a file name (in this case "filename"), and then some options that control
+    how the file is opened.
+
+    Here you specify that you're opening the file for writing with:
+            :direction :output
+    And that you want to overwrite an existing file of the same name if it exists
+    with:
+            :if-exists :supersede    
+
+    Once you have the file open, all you have to do is print the contents of the
+    database with (print *db* out).
+    Unlike "format", "print" prints Lisp ojects in a form that can e read back in
+    by the Lisp reader. 
+
+    The macro "with-standard-io-syntax" ensures that certain variables that affect
+    the behavior of "print" are set to their standard values. You'll use the same
+    macro when you read the data back in to make sure the Lisp reader and printer
+    are operating compatibly.
+
+    So, if we evaluate:
+
+    > (save-db "~/my-cds.db")                                    ;; for *nix
+    > (save-db "c:/Users/nakki/my-cds.db")                       ;; for Windows
+
+
+    The function to load the database back in is similar:
+
+|#
+
+(defun load-db (filename)
+  (with-open-file (in filename)
+    (with-standard-io-syntax
+      (setf *db* (read in)))))
+
+#|
+
 
 |#
