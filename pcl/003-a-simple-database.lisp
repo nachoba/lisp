@@ -3,7 +3,7 @@
     FILENAME:     003-a-simple-database.lisp
     AUTHOR:       Ignacio Sniechowski
     DATE:         01/10/2017
-    REVISION:     10/10/2017
+    REVISION:     11/10/2017
     DESCRIPTION:  Taken from "Practical Common Lisp", Chapter 3.
     SUMMARY:      [01] Introduction
                   [02] Filling CDs
@@ -743,6 +743,9 @@
     Why should it have to do work at runtime checking whether title was even passed
     in?
 
+
+    Macros in Lisp
+    --------------
     The Lisp feature that makes this trivially easy is its macro system. A Lisp
     macro is essentially a code generator that gets run for you automatically by the
     compiler. When a Lisp expression contains a call to a macro, instead of evaluating
@@ -805,5 +808,144 @@
  
     (format t "hello, world")
 
+    So how can macros helps us with code duplication in our "where" function? We can
+    write a macro that generates exactly the code you need for each particular call
+    to "where". Again, the best approach is to build our code bottom up.
+
+    In our hand-optimized "selector" function, we have an expression of the following
+    form for each actual field referred to in the original call to "where"
+
+    (equal (getf cd field) value)
+
+    So let's write a function that, given the name of a field and a value, returns
+    such an expression. Since an expression is just a list, you might think you could
+    write something like this:
+
+    > (defun make-comparison-expr (field value)
+        (list equal (list getf cd field) value))
+
+    However, there's one trick here: as you know, when Lisp sees a simple name such
+    as field or value other than as the first element of a list, it assumes it's the
+    name of a variable and looks up its value.
+    That's fine for field and value; it's exactly what you want. But it will treat
+    "equal", "getf", and "cd" the same way, which isn't what you want.
+    However, you also know how to stop Lisp from evaluating a form: stick a single
+    forward quote (') in front of it.
+    So if you write "make-comparison-expr" like this, it will do what you want:
+|#
+
+(defun make-comparison-expr (field value)
+  (list 'equal (list 'getf 'cd field) value))
+
+#|
+
+    You can test it out in the REPL:
+
+    > (make-comparison-expr :rating 10)
+    (EQUAL (GETF CD :RATING) 10)
+
+    > (make-comparision-expr :title "Violator")
+    (EQUAL (GETF CD :TITLE) "Violator")
+
+    It turns out that there's an even better way to do it. What you'd really like is
+    a way to write an expression that's mostly not evaluated and then have some way
+    to pick out a few expressions that you do want evaluated.
+    And of course, there is such a mechanism: a back quote (`) before and expression
+    stops evaluation just like a forward quote.
+
+    > `(1 2 3)
+    (1 2 3)
+    > '(1 2 3)
+    (1 2 3)
+   
+    However, in a back-quoted expression, any subexpression that's preceded by a
+    comma is evaluated. Notice the effect of the comma in the second expression:
+
+    > `(1 2 (+ 1 2))
+    (1 2 (+ 1 2))
+    > `(1 2 ,(+ 1 2))
+    (1 2 3)
+
+    Using a back quote, you can write "make-comparison-expr" like this:
+    
+|#
+
+(defun make-comparison-expr2 (field value)
+  `(equal (getf cd ,field) ,value))
+
+#|
+
+    Now, if you look back to the hand-optimized "selector" function, you can see
+    that the body of the function consisted of one comparision expression per
+    field/value pair, all wrapped in an "and" expression.
+
+    Assume for the moment that you'll arrange for the arguments to the "where"
+    macro to be passed as a single list. You'll need a function that can take
+    the elements of such a list pairwise and collect the results of calling
+    "make-comparison-expr2" on each pair.
+    To implement that function, you can dip into the bag of advanced Lisp tricks
+    and pull out the mighty and powerful "loop" macro.
 
 |#
+
+(defun make-comparison-list (fields)
+  (loop while fields
+     collecting (make-comparison-expr2 (pop fields) (pop fields))))
+
+#|
+
+    A full discussion of "loop" will have to wait to upcoming chapters; for now
+    just note that this "loop" expression does exactly what you need: it loops
+    while there are elements left in the fields list, popping off two at a time,
+    passing them to "make-comparision-expr2", and collecting the results to be
+    returned at the end of the loop.
+    The "pop" macro, performs the inverse operation of the "push" macro we used
+    to add records to "*db*".
+
+    Now we just need to wrapp up the list returned by "make-comparison-list" in
+    an "and" and an anonymous function, which you can do in the "where" macro
+    itself. Using a back quote to make a template that you fill in by interpolating
+    the value of "make-comparison-list", it's trivial:
+
+|#
+
+(defmacro where2 (&rest clauses)
+  `#'(lambda (cd) (and ,@(make-comparison-list clauses))))
+
+#|
+
+    This macro uses a variant of "," - namely, the ",@" - before the call to
+    "make-comparison-list". The ",@" splices the value of the following expression
+    (which must evaluate to a list) into the enclosing list.
+
+    You can see the difference between "," and ",@" in the following two expressions:
+
+    > `(and ,(list 1 2 3))
+    (AND (1 2 3))
+    > `(and ,@(list 1 2 3))
+    (AND 1 2 3))
+
+    You can also use ",@" to splice into the middle of a list.
+
+    > `(and ,@(list 1 2 3) 4)
+    (AND 1 2 3 4)
+
+    The other important feature of the "where2" macro is the use of the "&rest" in
+    the argument list. Like "&key", "&rest" modifies the way arguments are parsed.
+    With a "&rest" in its parameter list, a function or macro can take an arbitrary
+    number of arguments, which are collected into a single list that becomes the
+    value of the variable whose name follows the "&rest".
+
+    So if you call "where2" like this:
+
+    > (where2 :title "Violator" :ripped t)
+
+    the variable "clauses" will contain the list:
+
+    (:title "Violator" :ripped t)
+
+    This list is passed to "make-comparison-list", which returns a list of
+    comparision expressions. 
+
+|#
+
