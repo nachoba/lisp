@@ -728,7 +728,82 @@
 
     [10] REMOVING DUPLICATION AND WINNING BIG
     -----------------------------------------
-    
+    So far all the database code is about 50 lines of code. But there's some code
+    duplication; for instance, in the body of the "where" function there is a bunch
+    of clauses like this, one per field:
+
+    (if title (equal (getd cd :title) title) t)
+
+    For a simple database like this, it's not so bad. But remember that all code
+    duplication has the same cost: if you want to change how it works, you have to
+    change multiple copies. And if you change the fields in a CD, you'll have to
+    add or remove clauses to "where". Also, "update" suffers from the same kind of
+    duplication. It's double annoying since the whole point of the "where" function
+    is to dynamically generate a bit of code that checks the values you care about.
+    Why should it have to do work at runtime checking whether title was even passed
+    in?
+
+    The Lisp feature that makes this trivially easy is its macro system. A Lisp
+    macro is essentially a code generator that gets run for you automatically by the
+    compiler. When a Lisp expression contains a call to a macro, instead of evaluating
+    the arguments and passing them to the function, the Lisp compiler passes the
+    arguments, unevaluated, to the macro code, which returns a new Lisp expression 
+    that is then evaluated in place of the original macro call.
+
+    We will start with a simple and silly example and then show how you can replace
+    the "where" function with a "where" macro. 
+
+    Before we can write this example macro, we need to quickly introduce one new
+    function: "reverse" takes a list as an argument and returns a new list that is
+    its reverse. So
+
+    > (reverse '(1 2 3))
+    (3 2 1)
+
+    Now let's create a macro:
 
 |#
 
+(defmacro backwards (expr)
+  (reverse expr))
+
+#|
+
+    The main syntatic difference between a function and a macro is that you define
+    a macro with "defmacro" instead of "defun". After that, a macro definition consists
+    of a name, just like a function, a parameter list, and a body of epressions, both
+    also like a function.
+    However, a macro has a totally different effect. You can use this macro as follows:
+
+    > (backwards ("hello, world" t format))
+    hello, world
+    NIL
+
+    This is what happened: When the REPL started to evaluate the "backwards"
+    expression, it recognized that "backwards" is the name of a macro. So it left
+    the expression ("hello, world" t format) unevaluated, which is good because it
+    isn't a legal Lisp form.
+
+    It then passed that list to the backwards code. The code in backwards passed the
+    list to "reverse", which returned the list (format t "hello, world").
+    "backwards" then passed that value back out to the REPL, which then evaluated it
+    in place of the original expression.
+
+    The "backwards" macro thus defines a new language that's a lot like Lisp (just
+    backward) that you can drop into anytime simply by wrapping a backward Lisp
+    expression in a call to the "backwards" macro.
+
+    And in a compiled Lisp program, that new language is just  as efficient as
+    normal Lisp because all the macro code (the code that generates the new expression)
+    runs at compile time.
+    In other words, the compiler will generate exactly the same code whether you
+    write 
+
+    (backwards ("hello, world" t format))
+
+    or
+ 
+    (format t "hello, world")
+
+
+|#
