@@ -3,7 +3,7 @@
     FILENAME:     003-a-simple-database.lisp
     AUTHOR:       Ignacio Sniechowski
     DATE:         01/10/2017
-    REVISION:     11/10/2017
+    REVISION:     12/10/2017
     DESCRIPTION:  Taken from "Practical Common Lisp", Chapter 3.
     SUMMARY:      [01] Introduction
                   [02] Filling CDs
@@ -945,7 +945,42 @@
     (:title "Violator" :ripped t)
 
     This list is passed to "make-comparison-list", which returns a list of
-    comparision expressions. 
+    comparision expressions. You can see exactly what code a call to "where2" will
+    generate using the function "macroexpand-1".
+    If you pass "macroexpand-1", a form representing a macro call, it will call the
+    macro code with appropiate arguments and return the expansion. So you can check
+    out the previous "where2" call like this:
 
+    > (macroexpand-1 '(where2 :tittle "Depeche Mode" :ripped t))
+    #'(LAMBDA (CD)
+    (AND (EQUAL (GETF CD :TITTLE) "Depeche Mode") 
+                (EQUAL (GETF CD :RIPPED) T)))
+    T
+
+    Looks good. Let's try it for real.
+
+    > (select (where2 :title "Violator" :ripped t))
+    ((:TITLE "Violator" :ARTIST "Depeche Mode" :RATING 10 :RIPPED T))
+
+    It works. And the "where2" macro with its two helper functions is actually one line
+    shorter than the original "where" function. And it's more general in that it's no longer
+    tied to the specific fields in our CD records.
+
+    [11] WRAPPING UP
+    ----------------
+    Now, an interesting thing has happened. You removed duplication and made the code more
+    efficient and more general at the same time. That's often the way it goes with a well
+    chosen macro. This makes sense because a macro is just another mechanism for creating
+    abstractions (abstractions at the syntactic level) and abstractions are by definition
+    more concise ways of expressing underlying generalities. 
+
+    Now the only code in the mini-database that's specific to CDs and the fields in them
+    is in the "make-cd", "prompt-for-cd", and "add-cd" functions. In fact, our new "where2"
+    macro would work with any plist-based database.
+
+    However, this is still far form being a complete database. You can probably think of
+    plenty of features to add, such as supporting multiple tables or more elaborate queries.
+    
 |#
+
 
