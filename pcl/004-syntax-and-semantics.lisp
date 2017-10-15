@@ -7,8 +7,12 @@
     DESCRIPTION:         From Chapter 4 "Practical Common Lisp"
     SUMMARY:             [01] Introduction
                          [02] Breaking Open the Black Box
-                         [03] S-expression
-                         [04]
+                         [03] S-expressions
+                         [04] S-expressions as Lisp Forms
+                         [05] Function Calls
+                         [06] Special Operators
+                         [07] Macros
+                         [08]  
 
 
     CHAPTER 4 - SYNTAX AND SEMANTICS
@@ -48,10 +52,208 @@
     Lists are delimited by parentheses and can contain any number of whitespace
     separated elemens. Atoms are everything else.
     The elements of lists are themselves s-expressions (in other words, atoms
-    or nested lists).
-    Comments are treated as whitespace.
+    or nested lists). Comments are treated as whitespace.
+    Since lists are syntactically so trivial, the only remaining syntactic rules
+    you need to know are those governing the form of different kinds of atoms.
+    Now we will see the most commonly used kinds of atoms: numbers, strings,
+    and names.
+
+    * Numbers are fairly straightforward: any sequence of digits (possibly
+    prefaced with a signt + or - ), containing a decimal point (.), or a solidus
+    (/), or ending with an exponent marker, is read as a number.
+    Common Lisp supports integers, ratios, floating-point numbers and complex
+    numbers too.
+    You can notate the same number in many different ways, but regardless of
+    how you write them, all rationals -integers and ratios- are represented
+    internally in simplified form.
+
+    * String literals are enclosed in double quotes. Within a string a backslash
+    (\) escapes the next character, causing it to be included in the sring
+    regardless of what it is. 
+    The only two characters that must be escaped within a string are double quotes
+    and the backslash itself.
+
+    * Names used in programs, such as "format" "hello-world", and "*db*" are
+    represented by objects called symbols. The reader knows nothing about how
+    a given name is going to be used -whether it's the name of a variable, a
+    function, or something else. It just reads a sequence of characters and
+    builds an object to represent the name. While reading names, the reader
+    converts all unescaped characters in a name to their uppercase equivalents.
+    
+    There are certain conventions used when using names. Names are generally
+    hyphenated like "hello-world" or "dump-database-to-disk". Also global
+    variables are given names that start and end with and asterisk (*), like
+    "*db*". Similarly, constants are given names starting and ending with (+).
+    Also, some programmers use (%) or (%%) to denote low-level functions.
+
+    For now the key thing to understand is how you can combine numbers, strings
+    and symbols with parentheses-delimited lists to build s-expressions
+    representing arbitrary trees of objects. Some simple examples look like this:
+
+    x                    ; the symbol X
+    ()                   ; the empty list
+    (1 2 3)              ; a list of three numbers
+    ("foo" "bar")        ; a list of two strings
+    (x y z)              ; a list of three symbols
+    (x 1 "foo")          ; a list of a symbol, a numbers and a string
+    (+ (* 2 3) 4)        ; a list of a symbol, a list, and a number
+
+    The following is a more complex example of a four-item list that contains
+    two symbols, the empty list, and another list, itself containing two symbols
+    and a string:
+
+    (defun hello-world ()
+      (format t "hello, world"))
 
 
+    [04] S-EXPRESSIONS AS LISP FORMS
+    --------------------------------
+    After the reader has translated a bunch of text into s-expressions, the
+    s-expressions can then be evaluated as Lisp code. The syntactic rules at this
+    level are quite simple: any atom (any nonlist or the empty list) is a legal
+    Lisp form as is any list that has a symbol as its first element.
+ 
+    The interesting thing about Lisp forms is not their syntax but how they are
+    evaluated. You can think of the evaluator as a function that takes as an
+    argument a syntactically well-formed Lisp form and returns a value, which we
+    can call the "value" of the form.
+
+    The simplest Lisp forms, atoms, can be divided into two categories: symbols
+    and everything else.
+    A symbol, evaluated as a form, is considered the name of a variable and
+    evaluates to the current value of the variable.
+    All other atoms -numbers and strings are the kinds we have seen so far- are
+    self evaluating objects. This means means when such an expression is passed
+    to the notional evaluation function, it's simply returned.
+    It's also possible for symbols to be self-evaluating in the sense that the
+    variables they name can be assigned the value of the symbol itself. Two
+    important constants that are defined this way are "T" and "NIL", the 
+    canonical true and false values.
+
+    Another class of self-evaluating symbols are the keyword symbols -symbols 
+    whose names start with ":". When the reader interns such a name, it 
+    automatically defines a constant variable with the name and with the 
+    symbol as the value.
+
+    Things get more interesting when we consider who lists are evaluated. All
+    legal list forms start with a symbol, but three kinds of list forms are
+    evaluated in three quite different ways. To determine what kind of form
+    a given list is, the evaluator must determine whether the symbols that starts
+    this list is the name of a function, a macro, or a special operator.
+
+    If the symbol hasn't been defined yet -as may be the case if you're
+    compiling code that contains references to functions that will be defined
+    later- it's assumed to be a function name.
+    We will refer to the three kinds of forms as: function call forms, macro
+    forms, and special forms.
+
+    [05] FUNCTION CALLS
+    -------------------
+    The evaluation rule for function call forms is simple: evaluate the remaining
+    elements of the list as Lisp forms and pass the resulting values to the named
+    function. This rule obviously places some additional syntactic constraints
+    on a function call form: all the elements of the list after the first must
+    themselves be well-formed Lisp forms. In other words, the basic syntax of a
+    function call form is as follows, where each of the arguments is itself a 
+    Lisp form:
+
+    (function-name argument*)
+
+    Thus, the following expression is evaluated by first evaluating 1, then
+    evaluating 2, and then passing the resulting values to the + function, which
+    returns 3:
+
+    > (+ 1 2)
+    3
+
+    A more complex expression such as the following is evaluated in a similar
+    fashion except that evaluating the arguments (+ 1 2) and (- 3 4) entails
+    first evaluating their arguments and applying the appropriate functions to
+    them:
+
+    > (* (+ 1 2) (- 3 4))
+    > (* (3)     (-1))
+    > (* 3 -1)
+    -3
+
+    Eventually, the values 3 and -1 are passed to the * function, which returns
+    -3.
+
+    [06] SPECIAL OPERATORS
+    ----------------------
+    Not all operations can be defined as functions. Because the arguments to a
+    function are evaluated before the function is called, there's no way to
+    write a function that behaves like the "if" operator. To see why, consider
+    this form:
+
+    > (if x (format t "yes") (format t "no"))
+
+    If "if" were a function, the evaluator would evaluate the argument expressions
+    from left to right. The symbol x would be evaluated as a variable yielding
+    some value; then (format t "yes") would be evaluated as a function call,
+    yielding "NIL" after printing "yes" to standard output.
+    Then (format t "no") would be evaluated, printing "no" and also yielding "NIL"
+    and printing "no". Only after all three expression were evaluated would the
+    resulting values be passed to "if", too late for it to control which of the
+    two "format" expressions gets evaluated.
+
+    To solve this problem, CL defines a couple dozen so-called special operators,
+    "if" being one, that do things that functions can't do. There are 25 in all,
+    but only a small handful are used in day-to-day programming.
+
+    When the first element of a list is a symbol naming a special operator, the
+    rest of the expressions are evaluated according to the rule for that operator.
+
+    * IF: The rule for "if" is pretty easy: evaluate the first expression. If it
+    evaluates to non-nil, then evaluate the next expression and return its value.
+    Otherwise, return the value of evaluating the third expression or "nil" if
+    the third expression is omitted. In other words, the basic form of an "if"
+    expression is as follows:
+
+    > (if test-form then-form [ else-form ])
+
+    The test-form will always be evaluated and then one or the other of the 
+    then-form or else-form. 
+
+    * QUOTE: An even simpler special operator is "quote", which takes a single
+    expression as its "argument" and simply returns it, unevaluated. For instance,
+    the following evaluates to the list (+ 1 2), not the value 3:
+
+    > (quote (+ 1 2))
+    (+ 1 2)
+
+    There's nothing special about this list; you can manipulate it just like any
+    list you could create with the "list" function. 
+    The "quote" operator is used commonly enough that a special syntax for it is
+    built into the reader. Instead of writing the following:
+
+    > (quote (+ 1 2))
+
+    You can write:
+
+    > '(+ 1 2)
+
+    This syntax is a small extension of the s-expression syntax understood by the
+    reader. From the point of view of the evaluator, both those expressions will
+    look the same: a list whose first element is the symbol "quote" and whose
+    second element is the list (+ 1 2).
+
+    In general, the special operators implement features of the language that
+    require some special processing by the evaluator. For instance, several
+    special operators manipulate the environment in which other forms will be
+    evaluated. 
+    One of these, which we'll discuss in detail in a following chapter, is "let",
+    which is used to create new variable bindings. 
+
+    The following form evaluates to 10 because the second x is evaluated in an
+    environmnet where it's the name of a variable established by the "let" with
+    the value 10:
+
+    > (let ((x 10)) x)
+    10
 
 
+    [07] MACROS
+    -----------
+    
 #|
