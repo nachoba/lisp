@@ -3,7 +3,7 @@
     FILENAME:            004-syntax-and-semantics.lisp
     AUTOR:               Ignacio Sniechowski
     DATE:                14/10/2017
-    REVISION:      
+    REVISION:            16/10/2017
     DESCRIPTION:         From Chapter 4 "Practical Common Lisp"
     SUMMARY:             [01] Introduction
                          [02] Breaking Open the Black Box
@@ -12,7 +12,8 @@
                          [05] Function Calls
                          [06] Special Operators
                          [07] Macros
-                         [08]  
+                         [08] Truth, Falsehood, and Equality
+                         [09] Formatting Lisp Code   
 
 
     CHAPTER 4 - SYNTAX AND SEMANTICS
@@ -255,5 +256,200 @@
 
     [07] MACROS
     -----------
+    While special operators extend the syntax of CL beyond what can be expressed
+    with just function calls, the set of special operators is fixed by the 
+    language standard.
+
+    Macros, on the other hand, give users of the language a way to extend its
+    syntax. A macro is a function that takes s-expressions as arguments and 
+    returns a Lisp form that's then evaluated in place of the macro form.
+
+    The evaluation of a macro form proceeds in two phases:
+    First, the elements of the macro form are passed, unevaluated, to the macro
+    function.
+    Second, the form returned by the macro function -called its "expansion"- is
+    evaluated according to the normal evaluation rules.
+
+    It's important to keep the two phases of evluating a macro form clear in
+    your mind. It's easy to lose track when you're typing expressions at the
+    REPL because the two phases happen one after another and the value of the
+    second phase is immediately returned.
+
+    But when Lisp code is compiled, the two phases happen at completely different
+    times, so it's important to keep clear what's happening when.
+    For instance, when you compile a whole file of source code with the function
+    "compile-file", all the macro forms in the file are recursively expanded
+    until the code consists of nothing but function call forms and special forms.
+    This macroless code is then compiled into a FASL file that the "load" function
+    know how to load.
+
+    The compiled code, however, isn't executed until the file is loaded. Because
+    macros generate their expansion at compile time, they can do relatively large
+    amounts of work generating their expansion without having to pay for it when
+    the file is loaded or the functions defined in the file are called.
+
+    Since the evaluator doesn't evaluate the elements of the macro form before
+    passing them to the macro function, they don't need to be well-formed Lisp
+    forms. Each macro assigns a meaning to the s-expressions in the macro form 
+    by virtue of how it uses them to generate its expansion. In other words, each
+    macro defines its own local syntax.
+
+    The "backwards" macro defined in the previous chapter, defines a syntax in
+    which an expression is a legal backwards form if it's a list that's the 
+    reverse of a legal Lisp form.
+
+    For now, the important thing to realize is that macros -while syntactically
+    similar to function calls- serve quite a different purpose, providing a hook
+    into the compiler.
+
+
+    [08] TRUTH, FALSEHOOD, AND EQUALITY
+    -----------------------------------
+    The two last bits of basic knowledge you need to know are CL's notion of
+    truth and falsehood and what it means for two Lisp objects to be "equal".
+    Truth and falsehood are -in this realm- straightforward: the symbol "nil" is
+    the only false value, and everything else is true.
+
+    The symbol "t" is the canonical true value and can be used when you need to
+    return a non-nil value and don't have anything else handy. The only tricky
+    thing about "nil" is that it's the only object that's both an atom and a list:
+    in addition to falsehood, it's also used to represent the empty list.
     
+    This equivalence between "nil" and the empty list "()" is buit into the
+    reader: if the reader sees "()", it reads it as the symbol "nil". They're
+    completely interchangeable. And because "nil", as I mentioned previously, is
+    the name of a constant variable with the symbol NIL as its value, the 
+    expressions "nil" "()" "'nil" "'()" all evaluate to the same thing -the
+    unquoted forms evaluated as a reference to the constant variable whose value
+    is the symbol NIL, but in the quoted forms the "quote" special operator 
+    evaluates to the symbol directly. For the same reason, both "t" and "'t" will
+    evaluate to the same thing: the symbol T.
+
+    Using phrases such as "the same thing" of course begs the question of what it
+    means for two values to be "the same". Common Lisp provides a number of type
+    specific equality predicates:
+
+    =      is used to compare numbers
+    char=  is used to compare characters
+    ...
+
+    We will discuss the four "generic" equality predicates -functions that can
+    be passed any two Lisp objects and will return true if they're equivalent and
+    false otherwise.
+    They are, in order of discrimination: "eq", "eql", "equal", and "equalp"
+
+    * "eq" Tests for "object identity" -two objects are EQ if they're identical.
+    unfortunately, the object identity of numbers and characters depends on how
+    those data types are implemented in a particular Lisp. Thus, "eq" may consider
+    two numbers or two characters with the same value to be equivalent, or it may
+    not.
+    Thus, you should never use "eq" to compare values that may be numbers or
+    characters. 
+
+    * "eql" Common Lisp defines "eql" to behave like "eq" except that it also
+    is guaranteed to consider two object of the same class representing the same
+    numeric or character value to be equivalent. Thus (eql 1 1) is guaranteed to
+    be true. And (eql 1 1.0) is guaranted to be false since the integer value 1
+    and the floating-point value are instances of different classes.
+
+    There are two schools of thought about when to use "eq" and when to use "eql"
+    The "use EQ when possible" camp argues you should use "eq" when you know you
+    are not going to be comparing numbers or characters because (a) it's a way to
+    indicate that you are not going to be comparing numbers or characters and (b)
+    it will be marginally more efficient since "eq" doesn't have to check whether
+    its arguments are numbers or characters.
+
+    The "always use EQL" camp says you should never use "eq" because (a) the
+    potential gain in clarity is lost because every time someone reading your
+    code -including you- sees an "eq", they have to stop and check whether it's
+    being used correctly (in other words, that it's never going to be called
+    upon to compare numbers or characters) and (b) that the efficiency difference
+    between "eq" and "eql" is in the noise compared to real performance bottle
+    necks.
+
+    The code in this book is written in the "always use EQL" style.
+
+
+    The other two equality predicates, "equal" and "equalp", are general in the
+    sense that they can operate on all types of objects, but they're much less
+    fundamental than "eq" or "eql". They each define a slightly less discriminating
+    notion of equivalence than "eql", allowing different object to be considered
+    equivalent. There's nothing special about the particular notions of equivalence
+    these functions implement except that they've been found to be handy by Lisp
+    programmers in the past. If these predicates don't suit your needs, you can
+    always define your own predicate function that compares different types of
+    objects in the way you need.
+
+    "equal" loosens the discrimination of "eql" to consider lists equivalent if
+    they have the same structure and contents, recursively, according to "equal".
+    "equal" also considers strings equivalent if they contain  the same characters.
+    It also defines a looser definition of equivalence than "eql" for bit vectors
+    and pathnames, two data types we will discuss in future chapters. For other 
+    types, it falls back on "eql".
+
+    * "equalp" is similar to "equal" except it's even less discriminating. It
+    considers two strings equivalent if they contain the same characters, ignoring
+    differences in case. It also considers two characters equivalent if they
+    differ only in case. Numbers are equivalent under "equalp" if they represent
+    the same mathematical value.
+    Thus, (equalp 1 1.0) is true. Lists with "equalp" elements are "equalp"
+    likewise, arrays with "equalp" elements are "equalp".
+    As with "equal", there are a few other data types that we haven't covered yet
+    for which "equalp" can consider two objects equivalent that neither "eql" nor
+    "equal"  will. For all other data types, "equalp" falls back on "eql".
+
+   
+    [09] FORMATTING LISP CODE
+    -------------------------
+    Code formatting is neither a syntactic nor a semantic matter, but proper
+    formatting is important to reading and writing code fluently and
+    idiomatically. The key to formatting Lisp code is to indent it properly.
+
+    The indentation should reflect the structure of the code so that you don't
+    need to count parentheses to see what goes with what.
+
+    In general, each new level of nesting gets indented a bit more, and, if
+    line breaks are necessary, items at the same level of nesting are lined up.
+    Thus, a function call that needs to be broken up across multiple lines
+    might be written like this:
+
+    > (some-function arg-with-a-long-name 
+                     another-arg-with-an-even-longer-name)
+
+
+    Macro and specil forms that implement control sutrctures are typically
+    indented a little differently: the "body" elements are indented two spaces
+    relative to the opening parenthesis of the form. Thus:
+
+    > (defun print-list (list)
+        (dolist (i list)
+          (format t "item: ~a~%" i)))
+
+
+    In Slime, hitting TAB at the beginning of each line will cause it to be
+    indented appropriately, or you can re-indent a whole expression by
+    positioning the cursor on the opening parenthesis and typing C-M-q
+    Or you can re-indent the whole body of a function from anywhere within it
+    by typing C-c M-q    
+
+
+    Finally, comments should be prefaced with one to four semicolons depending
+    on the scope of the comment as follows:
+
+    ;;;; Four semicolons are used for a file header comment
+ 
+    ;;; A comment with three semicolons will usually be a paragraph
+    ;;; comment that applies to a large section of code that follows.
+
+    (defun foo (x)
+      (dotimes (i x)
+      ;; Two semicolons indicate this comment applies to the code
+      ;; that follows. Note that this comment is indented the same
+      ;; as the code that follows.
+      (some-function-call)
+      (another i)                     ; this comment applies to this line only
+      (and-another)                   ; and this is for this line
+      (baz)))
+
+
 #|
