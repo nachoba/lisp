@@ -11,7 +11,8 @@
                            [04] Optional Parameters
                            [05] Rest Parameters
                            [06] Keyword Parameters
-                           [07]  
+                           [07] Mixing Different Parameter Types  
+                           [08] Function Return Values
 
 
     CHAPTER 5 :: FUNCTIONS
@@ -363,5 +364,137 @@
 (defun foo-keyword2 (&key (a 0) (b 0 b-supplied-p) (c (+ a b)))
   (list a b c b-supplied-p))
 
+#|
+
+    So evaluating this functions gives:
+
+    > (foo-keyword2 :a 1)
+    (1 0 1 NIL)
+
+    > (foo-keyword2 :b 1)
+    (0 1 1 T)
+
+    > (foo-keyword2 :b 1 :c 4)
+    (0 1 4 T)
+
+    > (foo-keyword2 :a 2 :b 1 :c 4)
+    (2 1 4 T)
+
+    Also, if for some reason you want the keyword the caller uses to specify
+    the parameter to be different from the name of the actual parameter, you
+    can replace the parameter name with another list containing the keyword to
+    use when calling the function and the name to be used for the parameter.
+    The following definition of "foo-key2":
+|#
+
+(defun foo-key2 (&key ((:apple a)) ((:box b) 0) ((:charlie c) 0 c-supplied-p))
+  (list a b c c-supplied-p))
+
+#|
+
+    Lets the caller call it like this:
+
+    > (foo-key2 :apple 10 :box 20 :charlie 30)
+    (10 20 30 T)
+
+    This style is mostly useful if you want to completely decouple the public
+    API of the function from the internal details, usually because you want to
+    use short variable names internally but descriptive keywords in the API.
+    It's not, however, very frequently used.
 
 
+
+    [07] MIXING DIFFERENT PARAMETER TYPES
+    -------------------------------------
+    It's possible, but rare, to use all four flavors of parameters in a single 
+    function. Whenever more than one flavor of parameter is used, they must be
+    declared in the order I've discussed them: first the names of the required
+    parameters, then the optional parameters, then the rest parameter, and finally
+    the keyword parameters.
+
+    Typically, however, in functions that use multiple flavors of parameters,
+    you'll combine required parameters with one other flavor or possibly combine
+    "&optional" and "&rest" parameters. 
+    The other two combinations, either "&optional" or "&rest" parameters combined
+    with "&key" parameters, can lead to somewhat surprising behavior.
+
+    Combining "&optional" and "&key" parameters yields surprising enough results
+    that you should proably avoid it altogether. The problem is that if a caller
+    doesn't supply values for all the optional parameters, then those parameters
+    will eat up the keywords and values intended for the keyword parameters.
+
+    For instance, this function unwisely mixes "&optional" and "&key" parameters:
+
+|#
+
+(defun fuu (x &optional y &key z)
+  (list x y z))
+
+#|
+
+    If called like this, it works fine:
+
+    > (fuu 1 2 :z 3)
+    (1 2 3)
+
+    And this is also fine:
+
+    > (fuu 1)
+    (1 nil nil)
+
+    But this will signal an error:
+  
+    > (fuu 1 :z 3)
+    ERROR
+
+    This is because the keyword :z is taken as a value to fill the optional y
+    parameter, leaving only the argument 3 to be processed. At that point, Lisp
+    will be expecting either a keyword/value pair or nothing and will complain.
+
+    Perharps even worse, if the function had had two "&optional" parameters, this
+    last call would have resulted in the values :z and 3 being bound to the two
+    "&optional" parameters and the "&key" parameter z getting the default value
+    NIL with no indication that anything was amiss.
+
+    In general, if you find yourself writing a function that uses both "&optional"
+    and "&key" parameters, you should probably just change it to use all "&key"
+    parameters -they're more flexible, and you can always add new keyword parameters
+    without disturbing existing callers of the function.
+
+    You can also remove keyword parameters, as long as no one is using them.
+    In general, using keyword parameters helps make code much easier to maintain
+    and evolve -if you need to add some new behavior to a function that requires
+    new parameters, you can add keyword parameters without having to touch, or
+    even recompile, any existing code that calls the function.
+ 
+    You can safely combine "&rest" and "&key" parameters, but the behavior may be
+    a bit surprising initially. Normally the presence of either "&rest" or "&key"
+    in a parameter list causes all the values remaining after the required and 
+    "&optional" parameters have been filled in to be processed in a particular
+    way -either gathered into a list for a "&rest" parameter or assigned to the
+    appropiate "&key" parameters based on the keywords.
+
+    If both "&rest" and "&key" appear in a parameter list, then both things
+    happen -all the remaining values, which include the keywords themselves,
+    are gathered into a list that's bound to the "&rest" parameter, and the
+    appropiate values are also bound to the "&key" parameters.
+
+    So given this function:
+|#
+
+(defun fufu (&rest rest &key a b c)
+  (list rest a b c))
+
+#|
+
+    You get this result:
+
+    > (fufu :a 1 :b 2 :c 3)
+    ((:A 1 :B 2 :C 3) 1 2 3)
+
+
+    [08] FUNCTION RETURN VALUES
+    ---------------------------
+    
+
+|#
